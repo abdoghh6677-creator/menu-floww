@@ -1856,32 +1856,28 @@ export default function MenuPage({ params }) {
                   )}
                 </div>
 {paymentMethod === 'instapay' && (
-  <div className="mt-4 bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
-    <h5 className="font-bold text-purple-900 mb-3">💳 {t.instapay}</h5>
+  <div className="mt-4 bg-purple-50 border-2 border-purple-200 rounded-lg p-3 sm:p-4">
+    <h5 className="font-bold text-purple-900 mb-3 text-sm sm:text-base">💳 {t.instapay}</h5>
 
-    <div className="mt-4 space-y-4">
-      {/* Large button with image and small quick-access button */}
+    <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
       {restaurant?.instapay_link && (
         <div className="space-y-3">
-          <div className="flex gap-3 items-stretch">
-            {/* Large button */}
-            <a
-              href={restaurant.instapay_link}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-grow inline-flex items-center justify-center px-6 py-6 bg-white rounded-lg hover:shadow-2xl transition border-2 border-gray-300 hover:border-purple-500"
-              aria-label="Pay with InstaPay"
-            >
-              <img
-                src="/instapay.png"
-                alt="InstaPay"
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
-                className="h-24 md:h-28 lg:h-32 w-auto object-contain"
-              />
-            </a>
-          </div>
+          <a
+            href={restaurant.instapay_link}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full inline-flex items-center justify-center px-3 sm:px-6 py-3 sm:py-6 bg-white rounded-lg hover:shadow-2xl transition border-2 border-gray-300 hover:border-purple-500"
+            aria-label="Pay with InstaPay"
+          >
+            <img
+              src="/instapay.png"
+              alt="InstaPay"
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+              className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
+            />
+          </a>
           {/* Total amount */}
-          <p className="text-center text-lg font-bold text-purple-900">💰 {translations[language]?.currency || 'LE'}: {getCartTotal()}</p>
+          <p className="text-center text-base sm:text-lg font-bold text-purple-900">💰 {translations[language]?.currency || 'LE'}: {getCartTotal()}</p>
         </div>
       )}
     </div>
