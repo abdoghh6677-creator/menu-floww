@@ -1658,8 +1658,8 @@ export default function MenuPage({ params }) {
 
       {/* Checkout Modal Placeholder */}
       {showCheckout && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className={`w-full max-w-md rounded-lg p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[90vh] overflow-y-auto`}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className={`w-full max-w-md rounded-lg p-3 sm:p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[95vh] sm:max-h-[90vh] overflow-y-auto`}>
             <h3 className="text-xl font-bold mb-4">{t.checkout}</h3>
             <form onSubmit={handleCheckout} className="space-y-4">
               <input 
@@ -1855,34 +1855,35 @@ export default function MenuPage({ params }) {
                     </button>
                   )}
                 </div>
-{paymentMethod === 'instapay' && (
-  <div className="mt-4 bg-purple-50 border-2 border-purple-200 rounded-lg p-3 sm:p-4">
-    <h5 className="font-bold text-purple-900 mb-3 text-sm sm:text-base">💳 {t.instapay}</h5>
 
-    <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
-      {restaurant?.instapay_link && (
-        <div className="space-y-3">
-          <a
-            href={restaurant.instapay_link}
-            target="_blank"
-            rel="noreferrer"
-            className="w-full inline-flex items-center justify-center px-3 sm:px-6 py-3 sm:py-6 bg-white rounded-lg hover:shadow-2xl transition border-2 border-gray-300 hover:border-purple-500"
-            aria-label="Pay with InstaPay"
-          >
-            <img
-              src="/instapay.png"
-              alt="InstaPay"
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
-              className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
-            />
-          </a>
-          {/* Total amount */}
-          <p className="text-center text-base sm:text-lg font-bold text-purple-900">💰 {translations[language]?.currency || 'LE'}: {getCartTotal()}</p>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+                {paymentMethod === 'instapay' && (
+                  <div className="mt-4 bg-purple-50 border-2 border-purple-200 rounded-lg p-3 sm:p-4">
+                    <h5 className="font-bold text-purple-900 mb-3 text-sm sm:text-base">💳 {t.instapay}</h5>
+
+                    <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
+                      {restaurant?.instapay_link && (
+                        <div className="space-y-3">
+                          <a
+                            href={restaurant.instapay_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-full inline-flex items-center justify-center px-3 sm:px-6 py-3 sm:py-6 bg-white rounded-lg hover:shadow-2xl transition border-2 border-gray-300 hover:border-purple-500"
+                            aria-label="Pay with InstaPay"
+                          >
+                            <img
+                              src="/instapay.png"
+                              alt="InstaPay"
+                              onError={(e) => { e.currentTarget.style.display = 'none' }}
+                              className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
+                            />
+                          </a>
+                          {/* Total amount */}
+                          <p className="text-center text-base sm:text-lg font-bold text-purple-900">💰 {translations[language]?.currency || 'LE'}: {getCartTotal()}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
 
