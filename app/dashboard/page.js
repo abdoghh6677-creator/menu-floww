@@ -652,10 +652,19 @@ const checkUser = async () => {
     // ترجمة الوصف تلقائياً
     const translations = await translateText(newItem.description)
 
-    // prepare payload
+    // prepare payload — map translation keys to proper column names
     const payload = {
       ...newItem,
-      ...translations,
+      name_en: newItem.name_en || translations.en,
+      name_fr: newItem.name_fr || translations.fr,
+      name_de: newItem.name_de || translations.de,
+      name_ru: newItem.name_ru || translations.ru,
+      name_ja: newItem.name_ja || translations.ja,
+      description_en: translations.en,
+      description_fr: translations.fr,
+      description_de: translations.de,
+      description_ru: translations.ru,
+      description_ja: translations.ja,
       restaurant_id: restaurant.id,
       price: parseFloat(newItem.price)
     }
