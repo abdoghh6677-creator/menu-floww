@@ -1489,7 +1489,7 @@ export default function MenuPage({ params }) {
 
     {/* Center: Logo & Name */}
     <div className="flex flex-col items-center z-10">
-      <div className="bg-white p-1 rounded-full shadow-2xl mb-4 w-32 h-32 flex items-center justify-center overflow-hidden border-4 border-white/30">
+      <div className="bg-white p-1 rounded-full shadow-2xl mb-2 sm:mb-4 w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center overflow-hidden border-4 border-white/30">
         {restaurant.logo_url ? (
           <img 
             src={restaurant.logo_url} 
@@ -1498,11 +1498,11 @@ export default function MenuPage({ params }) {
             style={{ imageRendering: 'high-quality' }}
           />
         ) : (
-          <span className="text-6xl">🍽️</span>
+          <span className="text-3xl sm:text-6xl">🍽️</span>
         )}
       </div>
       
-      <h1 className="text-4xl md:text-5xl font-black text-white drop-shadow-2xl text-center px-2">
+      <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white drop-shadow-2xl text-center px-2">
         {restaurant.name}
       </h1>
     </div>
@@ -1511,10 +1511,10 @@ export default function MenuPage({ params }) {
 </div>
 
       {/* Search Bar */}
-      <div className="max-w-4xl mx-auto px-4 mt-6 flex items-center gap-3">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 mt-3 sm:mt-6 flex items-center gap-2 sm:gap-3">
             <button
               onClick={toggleTheme}
-              className={`p-3 rounded-xl border transition-all shadow-sm active:scale-95 ${darkMode ? 'bg-gray-800 border-gray-700 text-yellow-400 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'}`}
+              className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border transition-all shadow-sm active:scale-95 text-lg sm:text-xl ${darkMode ? 'bg-gray-800 border-gray-700 text-yellow-400 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'}`}
             >
               {darkMode ? '☀️' : '🌙'}
             </button>
@@ -1524,13 +1524,13 @@ export default function MenuPage({ params }) {
               placeholder={t.search}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl border outline-none transition-all shadow-sm focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-black placeholder-gray-400'}`}
+              className={`w-full px-2 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border outline-none transition-all shadow-sm focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-black placeholder-gray-400'}`}
             />
             </div>
             <div className="relative">
               <button
                 onClick={() => setShowLangList(prev => !prev)}
-                className={`px-4 py-3 rounded-xl border font-bold text-sm transition-all shadow-sm active:scale-95 ${darkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-100'}`}
+                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border font-bold text-xs sm:text-sm transition-all shadow-sm active:scale-95 whitespace-nowrap ${darkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-100'}`}
               >
                 {LANG_LABELS[language] || language.toUpperCase()}
               </button>
@@ -1556,13 +1556,13 @@ export default function MenuPage({ params }) {
       </div>
 
       {/* Categories */}
-      <div className={`max-w-4xl mx-auto px-4 py-4 sticky top-0 z-30 backdrop-blur-sm transition-all ${darkMode ? 'bg-gray-900/95' : 'bg-gray-50/95'}`}>
-        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+      <div className={`max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-4 sticky top-0 z-30 backdrop-blur-sm transition-all ${darkMode ? 'bg-gray-900/95' : 'bg-gray-50/95'}`}>
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2.5 rounded-full font-medium text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
                 selectedCategory === cat
                   ? 'bg-orange-600 text-white shadow-lg scale-105'
                   : (darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200')
@@ -1575,13 +1575,13 @@ export default function MenuPage({ params }) {
       </div>
 
       {/* Menu Items */}
-      <div id="menu" className="max-w-4xl mx-auto px-4">
+      <div id="menu" className="max-w-4xl mx-auto px-2 sm:px-4">
         {filteredItems.length === 0 ? (
-          <div className={`text-center py-12 rounded-lg shadow ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`text-center py-8 sm:py-12 rounded-lg shadow ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <p className={darkMode ? 'text-gray-300' : 'text-black'}>{t.noItems}</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredItems.map((item) => (
               <MenuItem
                 key={item.id}
@@ -2136,17 +2136,17 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
       
       {/* Item Detail Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" onClick={() => setOpen(false)}>
-          <div className={`w-full max-w-lg rounded-lg p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
-            <div className="flex gap-4">
-              <div className="w-36 h-36 rounded-xl overflow-hidden flex-shrink-0">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50" onClick={() => setOpen(false)}>
+          <div className={`w-full max-w-lg rounded-lg p-4 sm:p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="w-full sm:w-36 h-32 sm:h-36 rounded-xl overflow-hidden flex-shrink-0">
                 {currentImage ? <img src={currentImage} alt={name} className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold mb-1">{name}</h3>
-                {description && <p className={`text-sm mb-3 ${darkMode ? 'text-gray-500' : 'text-gray-900'}`}>{description}</p>}
+                <h3 className="text-lg sm:text-xl font-bold mb-1">{name}</h3>
+                {description && <p className={`text-xs sm:text-sm mb-3 ${darkMode ? 'text-gray-500' : 'text-gray-900'}`}>{description}</p>}
                 <div className="mb-2">
-                  <span className="font-semibold">{t.sizes}</span>
+                  <span className="font-semibold text-sm sm:text-base">{t.sizes}</span>
                   <div className="flex gap-2 flex-wrap mt-2">
                     {item.item_variants && item.item_variants.length > 0 ? item.item_variants.map(variant => {
                       const variantName = language === 'en' && variant.name_en ? variant.name_en : language === 'ja' && variant.name_ja ? variant.name_ja : language === 'fr' && variant.name_fr ? variant.name_fr : language === 'de' && variant.name_de ? variant.name_de : language === 'ru' && variant.name_ru ? variant.name_ru : variant.name
