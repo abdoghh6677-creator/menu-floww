@@ -823,6 +823,11 @@ export default function MenuPage({ params }) {
       } catch (e) {
         console.error('Error loading payment settings from localStorage:', e)
       }
+      
+      // Set safe defaults for undefined payment settings
+      restaurantData.accepts_cash = restaurantData.accepts_cash !== false
+      restaurantData.accepts_instapay = restaurantData.accepts_instapay === true
+      restaurantData.accepts_visa = restaurantData.accepts_visa !== false
     }
 
     setRestaurant(restaurantData)

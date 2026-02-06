@@ -744,7 +744,11 @@ const checkUser = async () => {
         }
       }))
       
-      await supabase.from('item_variants').insert(variantsToInsert)
+      const { error: variantsError } = await supabase.from('item_variants').insert(variantsToInsert)
+      if (variantsError) {
+        console.error('Error adding variants:', variantsError)
+        error = variantsError
+      }
     }
 
     if (error) {
@@ -757,11 +761,11 @@ const checkUser = async () => {
       } catch (e) {
         alert('حدث خطأ أثناء إضافة الصنف')
       }
-    }
-
-    if (!error) {
+    } else {
+      // ✅ Only reset and reload if everything succeeded
       resetForm()
       loadMenuItems(restaurant.id)
+      alert('تم إضافة الصنف مع الأحجام والإضافات بنجاح!')
     }
   }
 
