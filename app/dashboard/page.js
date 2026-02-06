@@ -676,11 +676,10 @@ const checkUser = async () => {
 
   const handleEditItem = async (e) => {
     e.preventDefault()
-    
-    if (!restaurant) return
+
+    if (!restaurant || !editingItem) return
 
     try {
-      // التحقق من البيانات المعلقة غير المكتملة
       if (newVariant.name && newVariant.price === '') {
         alert('يرجى تحديد سعر للحجم/النوع قبل الحفظ')
         return
@@ -690,21 +689,14 @@ const checkUser = async () => {
         return
       }
 
-      // تضمين الإضافات والأحجام المعلقة في المدخلات
       let finalAddons = [...addons]
-      if (newAddon.name && newAddon.price !== '') {
-        finalAddons.push({ ...newAddon })
-      }
+      if (newAddon.name && newAddon.price !== '') finalAddons.push({ ...newAddon })
 
       let finalVariants = [...variants]
-      if (newVariant.name && newVariant.price !== '') {
-        finalVariants.push({ ...newVariant })
-      }
+      if (newVariant.name && newVariant.price !== '') finalVariants.push({ ...newVariant })
 
-      // ترجمة الوصف تلقائياً إذا تم تعديله
       const translations = await translateText(newItem.description)
 
-      // build update payload and retry without promotion fields if needed
       const updatePayload = {
         name: newItem.name,
         name_en: newItem.name_en,
@@ -723,118 +715,60 @@ const checkUser = async () => {
         hide_when_available: newItem.hide_when_available || false
       }
 
-      let updError = null
-      try {
-        const res = await supabase.from('menu_items').update(updatePayload).eq('id', editingItem.id)
-        updError = res.error
-      } catch (e) {
-        console.error('Unexpected error updating item (throw):', e)
-        updError = e
-      }
-
-      if (updError && typeof updError === 'object') {
-        const errMsg = (updError.message || updError.details || JSON.stringify(updError)).toLowerCase()
-        if (errMsg.includes('has_promotion') || errMsg.includes('promotion_discount') || (errMsg.includes('column') && errMsg.includes('does not exist'))) {
-          console.warn('Promotion columns appear missing in DB. Retrying update without promotion fields.')
-          const fallback = { ...updatePayload }
-          delete fallback.has_promotion
-          delete fallback.promotion_discount
-          delete fallback.hide_when_available
-          try {
-            const res2 = await supabase.from('menu_items').update(fallback).eq('id', editingItem.id)
-            updError = res2.error
-          } catch (e2) {
-            console.error('Unexpected error updating fallback item (throw):', e2)
-            updError = e2
-          }
+      const addonsToInsert = finalAddons.length > 0 ? await Promise.all(finalAddons.map(async (addon) => {
+        const addonTranslations = await translateText(addon.name)
+        return {
+          name: addon.name,
+          name_en: addonTranslations.en,
+          name_fr: addonTranslations.fr,
+          name_de: addonTranslations.de,
+          name_ru: addonTranslations.ru,
+          name_ja: addonTranslations.ja,
+          price: parseFloat(addon.price) || 0
         }
-      }
+      })) : []
 
-      const error = updError
+      const variantsToInsert = finalVariants.length > 0 ? await Promise.all(finalVariants.map(async (variant) => {
+        const variantTranslations = await translateText(variant.name)
+        return {
+          name: variant.name,
+          name_en: variantTranslations.en,
+          name_fr: variantTranslations.fr,
+          name_de: variantTranslations.de,
+          name_ru: variantTranslations.ru,
+          name_ja: variantTranslations.ja,
+          price: parseFloat(variant.price),
+          is_default: variant.is_default || false
+        }
+      })) : []
+
+      let error = null
+      try {
+        const resp = await fetch(`/api/admin/menu-item?id=${editingItem.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item: updatePayload, addons: addonsToInsert, variants: variantsToInsert })
+        })
+        const j = await resp.json()
+        if (!resp.ok) {
+          console.error('Server error updating item:', j)
+          error = j.error || j
+        }
+      } catch (e) {
+        console.error('Network error updating item:', e)
+        error = e
+      }
 
       if (error) {
-        console.error('Error updating item:', error)
-        alert('حدث خطأ أثناء تحديث الصنف: ' + (error.message || JSON.stringify(error)))
-        return
-      }
-
-      // ✅ Delete old addons
-      const { error: deleteAddonsError } = await supabase
-        .from('menu_addons')
-        .delete()
-        .eq('menu_item_id', editingItem.id)
-
-      if (deleteAddonsError) {
-        console.error('Error deleting addons:', deleteAddonsError)
-        alert('حدث خطأ عند حذف الإضافات القديمة')
-        return
-      }
-
-      // ✅ Insert new addons
-      if (finalAddons.length > 0) {
-        const addonsToInsert = await Promise.all(finalAddons.map(async (addon) => {
-          const addonTranslations = await translateText(addon.name)
-          return {
-            menu_item_id: editingItem.id,
-            name: addon.name,
-            name_en: addonTranslations.en,
-            name_fr: addonTranslations.fr,
-            name_de: addonTranslations.de,
-            name_ru: addonTranslations.ru,
-            name_ja: addonTranslations.ja,
-            price: parseFloat(addon.price) || 0
-          }
-        }))
-
-        const { error: insertAddonsError } = await supabase
-          .from('menu_addons')
-          .insert(addonsToInsert)
-        
-        if (insertAddonsError) {
-          console.error('Error inserting addons:', insertAddonsError)
-          alert('حدث خطأ عند إضافة الإضافات: ' + (insertAddonsError.message || JSON.stringify(insertAddonsError)))
-          return
+        try {
+          const info = (error && (error.message || error.details || error.hint)) || JSON.stringify(error)
+          alert('حدث خطأ أثناء تحديث الصنف: ' + info)
+        } catch (e) {
+          alert('حدث خطأ أثناء تحديث الصنف')
         }
-      }
-
-      // ✅ Delete old variants
-      const { error: deleteVariantsError } = await supabase
-        .from('item_variants')
-        .delete()
-        .eq('menu_item_id', editingItem.id)
-
-      if (deleteVariantsError) {
-        console.error('Error deleting variants:', deleteVariantsError)
-        alert('حدث خطأ عند حذف الأحجام القديمة')
         return
       }
 
-      // ✅ Insert new variants
-      if (finalVariants.length > 0) {
-        const variantsToInsert = await Promise.all(finalVariants.map(async (variant) => {
-          const variantTranslations = await translateText(variant.name)
-          return {
-            menu_item_id: editingItem.id,
-            name: variant.name,
-            name_en: variantTranslations.en,
-            name_fr: variantTranslations.fr,
-            name_de: variantTranslations.de,
-            name_ru: variantTranslations.ru,
-            name_ja: variantTranslations.ja,
-            price: parseFloat(variant.price),
-            is_default: variant.is_default || false
-          }
-        }))
-
-        const { error: insertVariantsError } = await supabase.from('item_variants').insert(variantsToInsert)
-        if (insertVariantsError) {
-          console.error('Error inserting variants:', insertVariantsError)
-          alert('حدث خطأ عند إضافة الأحجام: ' + (insertVariantsError.message || JSON.stringify(insertVariantsError)))
-          return
-        }
-      }
-
-      // ✅ Success!
       alert('تم تحديث الصنف بنجاح!')
       resetForm()
       loadMenuItems(restaurant.id)
