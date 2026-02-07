@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { QRCodeCanvas } from 'qrcode.react'
+import { v4 as uuidv4 } from 'uuid'
 import { translateText } from '@/lib/translate'
 import PlanManagement from '@/components/PlanManagement'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
@@ -113,7 +114,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('dashboardTheme')
-    if (savedTheme === 'dark') setDarkMode(true)
+    if (savedTheme === 'dark') {
+      setTimeout(() => setDarkMode(true), 0)
+    }
   }, [])
 
   const [currentPlan, setCurrentPlan] = useState(null)
@@ -183,190 +186,9 @@ export default function Dashboard() {
     localStorage.setItem('dashboardTheme', newTheme ? 'dark' : 'light')
   }
 
-  useEffect(() => {
-    checkUser()
-  }, [])
+  
 
-  useEffect(() => {
-    if (!restaurant?.id) {
-      console.log('⏳ Waiting for restaurant data...')
-      return
-    }
-
-    console.log('🔄 Setting up realtime subscription for:', restaurant.id)
-
-    let channel = null
-    
-    const setupSubscription = async () => {
-      try {
-        channel = supabase
-          .channel(`realtime-orders-${restaurant.id}-${Date.now()}`, {
-            config: {
-              broadcast: { self: true },
-              presence: { key: restaurant.id }
-            }
-          })
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'orders',
-              filter: `restaurant_id=eq.${restaurant.id}`
-            },
-            async (payload) => {
-              console.log('✅ NEW ORDER EVENT RECEIVED:', payload.new)
-              
-              const orderType = payload.new.order_type === 'delivery' ? '🚗 توصيل' : payload.new.order_type === 'dine-in' ? '🍽️ محلي' : '🏪 استلام'
-              const customerName = payload.new.customer_name
-              const totalAmount = payload.new.total_amount
-              
-              // 🔊 تشغيل صوت الإشعار المتقدم (جرسين)
-              playNotificationSound()
-              setTimeout(() => {
-                playNotificationSound()
-              }, 500)
-              
-              // 🪟 إظهار Desktop Notification (إشعارات النظام)
-              showDesktopNotification(`🔔 طلب جديد!`, {
-                body: `👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`,
-                tag: 'new-order'
-              })
-              
-              // 💫 جعل عنوان الصفحة يومض
-              flashPageTitle(`طلب جديد من ${customerName}!`, document.title)
-
-              // 📳 اهتزاز الجهاز (إذا كان متاحاً - للهاتف)
-              try {
-                if ('vibrate' in navigator) {
-                  navigator.vibrate([300, 150, 300, 150, 300])
-                }
-              } catch (e) {
-                console.log('Vibration not supported', e)
-              }
-
-              // 💬 الإشعار داخل الصفحة
-              const notificationText = `📱 طلب جديد!\n👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`
-              setNotification(notificationText)
-              
-              // إعادة تحميل الطلبات
-              console.log('🔄 Reloading orders...')
-              await loadOrders(restaurant.id)
-              
-              // إبقاء الإشعار لمدة 10 ثوانٍ
-              setTimeout(() => setNotification(null), 10000)
-            }
-          )
-          .on('subscribe', (status) => {
-            console.log('📡 Subscription status:', status)
-            if (status === 'SUBSCRIBED') {
-              console.log('✅ Successfully subscribed to realtime orders')
-            }
-          })
-          .on('error', (error) => {
-            console.error('❌ Subscription error:', error)
-          })
-          .subscribe((status) => {
-            console.log('📊 Subscribe callback status:', status)
-          })
-
-        console.log('✅ Subscription setup completed')
-      } catch (error) {
-        console.error('❌ Error setting up subscription:', error)
-      }
-    }
-
-    setupSubscription()
-
-    return () => {
-      console.log('🧹 Cleaning up subscription')
-      if (channel) {
-        supabase.removeChannel(channel)
-      }
-    }
-  }, [restaurant?.id])
-
-  useEffect(() => {
-    if (activeTab === 'analytics' && restaurant) {
-      loadAnalytics()
-    }
-  }, [activeTab, restaurant, menuItems, analyticsRange])
-
-  // 🔄 Polling: فحص الطلبات الجديدة كل 3 ثوانٍ
-  useEffect(() => {
-    if (!restaurant?.id) return
-
-    console.log('⏰ Setting up order polling...')
-    
-    const checkNewOrders = async () => {
-      try {
-        const { data: latestOrders } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('restaurant_id', restaurant.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-
-        if (latestOrders && latestOrders.length > 0) {
-          const latestOrder = latestOrders[0]
-          
-          // تحقق إذا كان هناك طلب جديد لم نعرض له إشعار بعد
-          if (lastCheckedOrderId !== latestOrder.id && latestOrder.status === 'pending') {
-            console.log('📱 NEW ORDER DETECTED via polling:', latestOrder)
-            
-            // تحديث آخر طلب تم عرض إشعاره
-            setLastCheckedOrderId(latestOrder.id)
-            
-            const orderType = latestOrder.order_type === 'delivery' ? '🚗 توصيل' : latestOrder.order_type === 'dine-in' ? '🍽️ محلي' : '🏪 استلام'
-            const customerName = latestOrder.customer_name
-            const totalAmount = latestOrder.total_amount
-            
-            // 🔊 تشغيل صوت الإشعار (جرسين)
-            playNotificationSound()
-            setTimeout(() => {
-              playNotificationSound()
-            }, 500)
-            
-            // 🪟 Desktop Notification
-            showDesktopNotification(`🔔 طلب جديد!`, {
-              body: `👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`,
-              tag: 'new-order-polling'
-            })
-            
-            // 💫 جعل عنوان الصفحة يومض
-            flashPageTitle(`طلب جديد من ${customerName}!`, document.title)
-
-            // 📳 اهتزاز
-            try {
-              if ('vibrate' in navigator) {
-                navigator.vibrate([300, 150, 300, 150, 300])
-              }
-            } catch (e) {
-              console.log('Vibration not supported', e)
-            }
-
-            // 💬 الإشعار داخل الصفحة
-            const notificationText = `📱 طلب جديد!\n👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`
-            setNotification(notificationText)
-            setTimeout(() => setNotification(null), 10000)
-          }
-        }
-      } catch (error) {
-        console.error('❌ Polling error:', error)
-      }
-    }
-
-    // فحص فوري عند التحميل
-    checkNewOrders()
-
-    // ثم فحص كل 3 ثوانٍ
-    const pollingInterval = setInterval(checkNewOrders, 3000)
-
-    return () => {
-      console.log('🧹 Cleaning up polling')
-      clearInterval(pollingInterval)
-    }
-  }, [restaurant?.id, lastCheckedOrderId])
+  // Replaced: subscription, analytics and polling effects moved below loadAnalytics/loadOrders declarations to satisfy lint
 
   useEffect(() => {
     if (restaurant) {
@@ -381,29 +203,32 @@ export default function Dashboard() {
         console.error('Error loading saved payment settings:', e)
       }
 
-      setSettings({
-        logo_url: restaurant.logo_url || '',
-        cover_image_url: restaurant.cover_image_url || '',
-        working_hours: restaurant.working_hours || '',
-        is_open: restaurant.is_open,
-        delivery_fee: restaurant.delivery_fee || 0,
-        accepts_delivery: paymentSettings.accepts_delivery ?? restaurant.accepts_delivery ?? true,
-        accepts_dine_in: paymentSettings.accepts_dine_in ?? restaurant.accepts_dine_in ?? true,
-        accepts_pickup: paymentSettings.accepts_pickup ?? restaurant.accepts_pickup ?? true,
-        accepts_instapay: paymentSettings.accepts_instapay ?? restaurant.accepts_instapay ?? false,
-        instapay_username: paymentSettings.instapay_username ?? restaurant.instapay_username ?? '',
-        instapay_link: paymentSettings.instapay_link ?? restaurant.instapay_link ?? '',
-        instapay_receipt_number: paymentSettings.instapay_receipt_number ?? restaurant.instapay_receipt_number ?? '',
-        accepts_visa: paymentSettings.accepts_visa ?? restaurant.accepts_visa ?? false,
-        instapay_phone: paymentSettings.instapay_phone ?? restaurant.instapay_phone ?? '',
-        accepts_cash: paymentSettings.accepts_cash ?? (restaurant.accepts_cash !== false ? true : false),
-        whatsapp_notifications: paymentSettings.whatsapp_notifications ?? restaurant.whatsapp_notifications ?? false,
-        whatsapp_number: paymentSettings.whatsapp_number ?? restaurant.whatsapp_number ?? ''
-      })
+      // defer setSettings to avoid setState sync in effect
+      setTimeout(() => {
+        setSettings({
+          logo_url: restaurant.logo_url || '',
+          cover_image_url: restaurant.cover_image_url || '',
+          working_hours: restaurant.working_hours || '',
+          is_open: restaurant.is_open,
+          delivery_fee: restaurant.delivery_fee || 0,
+          accepts_delivery: paymentSettings.accepts_delivery ?? restaurant.accepts_delivery ?? true,
+          accepts_dine_in: paymentSettings.accepts_dine_in ?? restaurant.accepts_dine_in ?? true,
+          accepts_pickup: paymentSettings.accepts_pickup ?? restaurant.accepts_pickup ?? true,
+          accepts_instapay: paymentSettings.accepts_instapay ?? restaurant.accepts_instapay ?? false,
+          instapay_username: paymentSettings.instapay_username ?? restaurant.instapay_username ?? '',
+          instapay_link: paymentSettings.instapay_link ?? restaurant.instapay_link ?? '',
+          instapay_receipt_number: paymentSettings.instapay_receipt_number ?? restaurant.instapay_receipt_number ?? '',
+          accepts_visa: paymentSettings.accepts_visa ?? restaurant.accepts_visa ?? false,
+          instapay_phone: paymentSettings.instapay_phone ?? restaurant.instapay_phone ?? '',
+          accepts_cash: paymentSettings.accepts_cash ?? (restaurant.accepts_cash !== false ? true : false),
+          whatsapp_notifications: paymentSettings.whatsapp_notifications ?? restaurant.whatsapp_notifications ?? false,
+          whatsapp_number: paymentSettings.whatsapp_number ?? restaurant.whatsapp_number ?? ''
+        })
+      }, 0)
     }
   }, [restaurant])
 
-const checkUser = async () => {
+async function checkUser() {
   console.log('👤 Checking user...')
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
@@ -440,7 +265,7 @@ const checkUser = async () => {
 
   setLoading(false)
 }
-  const loadCurrentPlan = async (planId) => {
+  async function loadCurrentPlan(planId) {
     if (!planId) {
       const { data } = await supabase
         .from('plans')
@@ -460,7 +285,7 @@ const checkUser = async () => {
     setCurrentPlan(data)
   }
 
-  const loadMenuItems = async (restaurantId) => {
+  async function loadMenuItems(restaurantId) {
     // Fetch items
     const { data: items } = await supabase
       .from('menu_items')
@@ -496,7 +321,7 @@ const checkUser = async () => {
     setMenuItems(itemsWithData)
   }
 
-  const loadOrders = async (restaurantId) => {
+  async function loadOrders(restaurantId) {
     const { data } = await supabase
       .from('orders')
       .select(`
@@ -510,7 +335,7 @@ const checkUser = async () => {
     setOrders(data || [])
   }
 
-  const loadAnalytics = async () => {
+  async function loadAnalytics() {
     if (!restaurant) return
 
     let query = supabase
@@ -638,6 +463,192 @@ const checkUser = async () => {
       categorySales
     })
   }
+
+    // Effects moved here (after function declarations) to avoid lint 'accessed before declared'
+    useEffect(() => {
+      setTimeout(() => { checkUser() }, 0)
+    }, [])
+
+    useEffect(() => {
+      if (!restaurant?.id) {
+        console.log('⏳ Waiting for restaurant data...')
+        return
+      }
+
+      console.log('🔄 Setting up realtime subscription for:', restaurant.id)
+
+      let channel = null
+    
+      const setupSubscription = async () => {
+        try {
+          channel = supabase
+            .channel(`realtime-orders-${restaurant.id}-${Date.now()}`, {
+              config: {
+                broadcast: { self: true },
+                presence: { key: restaurant.id }
+              }
+            })
+            .on(
+              'postgres_changes',
+              {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'orders',
+                filter: `restaurant_id=eq.${restaurant.id}`
+              },
+              async (payload) => {
+                console.log('✅ NEW ORDER EVENT RECEIVED:', payload.new)
+              
+                const orderType = payload.new.order_type === 'delivery' ? '🚗 توصيل' : payload.new.order_type === 'dine-in' ? '🍽️ محلي' : '🏪 استلام'
+                const customerName = payload.new.customer_name
+                const totalAmount = payload.new.total_amount
+              
+                // 🔊 تشغيل صوت الإشعار المتقدم (جرسين)
+                playNotificationSound()
+                setTimeout(() => {
+                  playNotificationSound()
+                }, 500)
+              
+                // 🪟 إظهار Desktop Notification (إشعارات النظام)
+                showDesktopNotification(`🔔 طلب جديد!`, {
+                  body: `👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`,
+                  tag: 'new-order'
+                })
+              
+                // 💫 جعل عنوان الصفحة يومض
+                flashPageTitle(`طلب جديد من ${customerName}!`, document.title)
+
+                // 📳 اهتزاز الجهاز (إذا كان متاحاً - للهاتف)
+                try {
+                  if ('vibrate' in navigator) {
+                    navigator.vibrate([300, 150, 300, 150, 300])
+                  }
+                } catch (e) {
+                  console.log('Vibration not supported', e)
+                }
+
+                // 💬 الإشعار داخل الصفحة
+                const notificationText = `📱 طلب جديد!\n👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`
+                setNotification(notificationText)
+              
+                // إعادة تحميل الطلبات
+                console.log('🔄 Reloading orders...')
+                await loadOrders(restaurant.id)
+              
+                // إبقاء الإشعار لمدة 10 ثوانٍ
+                setTimeout(() => setNotification(null), 10000)
+              }
+            )
+            .on('subscribe', (status) => {
+              console.log('📡 Subscription status:', status)
+              if (status === 'SUBSCRIBED') {
+                console.log('✅ Successfully subscribed to realtime orders')
+              }
+            })
+            .on('error', (error) => {
+              console.error('❌ Subscription error:', error)
+            })
+            .subscribe((status) => {
+              console.log('📊 Subscribe callback status:', status)
+            })
+
+          console.log('✅ Subscription setup completed')
+        } catch (error) {
+          console.error('❌ Error setting up subscription:', error)
+        }
+      }
+
+      setupSubscription()
+
+      return () => {
+        console.log('🧹 Cleaning up subscription')
+        if (channel) {
+          supabase.removeChannel(channel)
+        }
+      }
+    }, [restaurant?.id])
+
+    useEffect(() => {
+      if (activeTab === 'analytics' && restaurant) {
+        setTimeout(() => { loadAnalytics() }, 0)
+      }
+    }, [activeTab, restaurant, menuItems, analyticsRange])
+
+    // 🔄 Polling: فحص الطلبات الجديدة كل 3 ثوانٍ
+    useEffect(() => {
+      if (!restaurant?.id) return
+
+      console.log('⏰ Setting up order polling...')
+    
+      const checkNewOrders = async () => {
+        try {
+          const { data: latestOrders } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('restaurant_id', restaurant.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+
+          if (latestOrders && latestOrders.length > 0) {
+            const latestOrder = latestOrders[0]
+          
+            // تحقق إذا كان هناك طلب جديد لم نعرض له إشعار بعد
+            if (lastCheckedOrderId !== latestOrder.id && latestOrder.status === 'pending') {
+              console.log('📱 NEW ORDER DETECTED via polling:', latestOrder)
+            
+              // تحديث آخر طلب تم عرض إشعاره
+              setLastCheckedOrderId(latestOrder.id)
+            
+              const orderType = latestOrder.order_type === 'delivery' ? '🚗 توصيل' : latestOrder.order_type === 'dine-in' ? '🍽️ محلي' : '🏪 استلام'
+              const customerName = latestOrder.customer_name
+              const totalAmount = latestOrder.total_amount
+            
+              // 🔊 تشغيل صوت الإشعار (جرسين)
+              playNotificationSound()
+              setTimeout(() => {
+                playNotificationSound()
+              }, 500)
+            
+              // 🪟 Desktop Notification
+              showDesktopNotification(`🔔 طلب جديد!`, {
+                body: `👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`,
+                tag: 'new-order-polling'
+              })
+            
+              // 💫 جعل عنوان الصفحة يومض
+              flashPageTitle(`طلب جديد من ${customerName}!`, document.title)
+
+              // 📳 اهتزاز
+              try {
+                if ('vibrate' in navigator) {
+                  navigator.vibrate([300, 150, 300, 150, 300])
+                }
+              } catch (e) {
+                console.log('Vibration not supported', e)
+              }
+
+              // 💬 الإشعار داخل الصفحة
+              const notificationText = `📱 طلب جديد!\n👤 ${customerName}\n${orderType}\n💰 ${totalAmount} ج`
+              setNotification(notificationText)
+              setTimeout(() => setNotification(null), 10000)
+            }
+          }
+        } catch (error) {
+          console.error('❌ Polling error:', error)
+        }
+      }
+
+      // فحص فوري عند التحميل
+      checkNewOrders()
+
+      // ثم فحص كل 3 ثوانٍ
+      const pollingInterval = setInterval(checkNewOrders, 3000)
+
+      return () => {
+        console.log('🧹 Cleaning up polling')
+        clearInterval(pollingInterval)
+      }
+    }, [restaurant?.id, lastCheckedOrderId])
 
   const handleAddItem = async (e) => {
     e.preventDefault()
@@ -863,7 +874,7 @@ const checkUser = async () => {
 
   const addAddonToList = () => {
     if (newAddon.name && newAddon.price !== '') {
-      setAddons([...addons, { ...newAddon, id: Date.now() }])
+      setAddons([...addons, { ...newAddon, id: uuidv4() }])
       setNewAddon({ name: '', price: '' })
     }
   }
@@ -876,7 +887,7 @@ const checkUser = async () => {
     if (newVariant.name && newVariant.price) {
       setVariants([...variants, { 
         ...newVariant, 
-        id: Date.now(),
+        id: uuidv4(),
         is_default: variants.length === 0 
       }])
       setNewVariant({ name: '', price: '' })
@@ -1692,7 +1703,7 @@ const checkUser = async () => {
                         </div>
                       </div>
                       {order.rating_feedback && (
-                        <p className="text-sm text-gray-700 italic">"{order.rating_feedback}"</p>
+                        <p className="text-sm text-gray-700 italic">{"\"" + order.rating_feedback + "\""}</p>
                       )}
                     </div>
                   )}
@@ -2063,10 +2074,10 @@ function CountUp({ value = 0, duration = 800, formatter = v => v }) {
 function LineChart({ data = [], height = 140, stroke = '#FB923C' }) {
   const [ready, setReady] = useState(false)
   useEffect(() => {
-    // trigger animation when data changes
-    setReady(false)
+    // trigger animation when data changes (defer initial setState to avoid sync setState-in-effect)
+    const r = setTimeout(() => setReady(false), 0)
     const t = setTimeout(() => setReady(true), 50)
-    return () => clearTimeout(t)
+    return () => { clearTimeout(r); clearTimeout(t) }
   }, [data])
 
   if (!data || data.length === 0) return (

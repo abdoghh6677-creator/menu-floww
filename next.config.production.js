@@ -19,9 +19,44 @@ module.exports = {
     formats: ['image/avif', 'image/webp'],
   },
 
-  // Headers الأمنية
+  // Headers الأمنية والـ Cache
   async headers() {
     return [
+      // API Routes - لا تُحفظ
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, must-revalidate',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+        ],
+      },
+      // Dashboard - تحديث الـ cache كل 5 ثواني
+      {
+        source: '/dashboard',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 's-maxage=5, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // الصفحات الديناميكية - تحديث الـ cache كل دقيقة
+      {
+        source: '/menu/:id',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 's-maxage=60, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // جميع الصفحات الأخرى
       {
         source: '/:path*',
         headers: [

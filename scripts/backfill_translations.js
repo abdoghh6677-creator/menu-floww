@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 /*
   Backfill translations for existing menu items, variants, and addons.
   Usage:

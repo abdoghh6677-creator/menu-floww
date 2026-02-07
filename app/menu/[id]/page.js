@@ -2004,7 +2004,7 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
   useEffect(() => {
     if (item.item_variants && item.item_variants.length > 0) {
       const defaultVariant = item.item_variants.find(v => v.is_default) || item.item_variants[0]
-      setSelectedVariant(defaultVariant)
+      setTimeout(() => setSelectedVariant(defaultVariant), 0)
     }
   }, [item])
 

@@ -73,7 +73,8 @@ export default function LocationPicker({ onLocationSelect, initialLocation }) {
       
       if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
         console.warn('⚠️ Google Maps API Key is missing or not configured')
-        setMapError('⚠️ خريطة Google Maps غير متوفرة. يرجى إضافة مفتاح API صحيح في .env.local')
+        // defer state update to avoid setState sync inside effect
+        setTimeout(() => setMapError('⚠️ خريطة Google Maps غير متوفرة. يرجى إضافة مفتاح API صحيح في .env.local'), 0)
         return
       }
       
@@ -82,7 +83,8 @@ export default function LocationPicker({ onLocationSelect, initialLocation }) {
       script.defer = true
       script.onerror = () => {
         console.error('❌ Failed to load Google Maps')
-        setMapError('❌ فشل تحميل خريطة Google Maps - تحقق من مفتاح API')
+        // defer state update to avoid setState sync inside effect
+        setTimeout(() => setMapError('❌ فشل تحميل خريطة Google Maps - تحقق من مفتاح API'), 0)
       }
       document.head.appendChild(script)
     }

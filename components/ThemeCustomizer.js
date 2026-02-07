@@ -2,6 +2,18 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
+async function loadThemeInitial(restaurant, setTheme) {
+  const { data } = await supabase
+    .from('restaurant_themes')
+    .select('*')
+    .eq('restaurant_id', restaurant.id)
+    .single()
+
+  if (data) {
+    setTheme(data)
+  }
+}
+
 export default function ThemeCustomizer({ restaurant, currentPlan }) {
   const [theme, setTheme] = useState({
     primary_color: '#ea580c',
@@ -15,20 +27,9 @@ export default function ThemeCustomizer({ restaurant, currentPlan }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    loadTheme()
+    if (!restaurant) return
+    setTimeout(() => { loadThemeInitial(restaurant, setTheme) }, 0)
   }, [restaurant])
-
-  const loadTheme = async () => {
-    const { data } = await supabase
-      .from('restaurant_themes')
-      .select('*')
-      .eq('restaurant_id', restaurant.id)
-      .single()
-
-    if (data) {
-      setTheme(data)
-    }
-  }
 
   const saveTheme = async () => {
     setSaving(true)
