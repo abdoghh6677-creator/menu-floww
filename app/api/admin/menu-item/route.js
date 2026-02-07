@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { randomUUID } from 'crypto'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
@@ -17,19 +18,24 @@ export async function POST(req) {
     }
 
     const body = await req.json()
-    console.log('API POST /api/admin/menu-item body:', JSON.stringify(body))
+    console.log('[DEBUG] API POST /api/admin/menu-item body:', JSON.stringify(body))
     const { item, addons = [], variants = [] } = body
 
-    const res = await supabaseAdmin.from('menu_items').insert([item]).select()
+    // Generate UUID for new menu_item if not provided
+    const itemId = item.id || randomUUID()
+    const itemWithId = { ...item, id: itemId }
+    console.log('[DEBUG] Creating menu_item with UUID:', itemId)
+
+    const res = await supabaseAdmin.from('menu_items').insert([itemWithId]).select()
     if (res.error) {
-      console.error('Supabase insert menu_items error:', res.error)
+      console.error('[ERROR] Supabase insert menu_items error:', res.error)
       return new Response(JSON.stringify({ error: res.error }), { status: 500 })
     }
     const created = res.data && res.data[0]
-    console.log('Created menu_item:', created)
+    console.log('[DEBUG] Created menu_item:', created)
     if (!created) return new Response(JSON.stringify({ error: 'No item created' }), { status: 500 })
 
-    const itemId = created.id
+    // itemId already set above from randomUUID()
 
     if (addons && addons.length > 0) {
       const addonsToInsert = addons.map(a => ({ ...a, menu_item_id: itemId }))
@@ -68,17 +74,19 @@ export async function PUT(req) {
     if (!id) return new Response(JSON.stringify({ error: 'Missing id query parameter' }), { status: 400 })
 
     const body = await req.json()
-    console.log(`API PUT /api/admin/menu-item id=${id} body:`, JSON.stringify(body))
+    console.log(`[DEBUG] API PUT /api/admin/menu-item id=${id} (typeof: ${typeof id}) body:`, JSON.stringify(body))
     const { item, addons = [], variants = [] } = body
 
-    console.log(`API PUT: addons count: ${addons.length}, variants count: ${variants.length}`)
-    console.log(`API PUT: addons:`, JSON.stringify(addons))
-    console.log(`API PUT: variants:`, JSON.stringify(variants))
+    console.log(`[DEBUG] API PUT: addons count: ${addons.length}, variants count: ${variants.length}`)
+    console.log(`[DEBUG] API PUT: addons:`, JSON.stringify(addons))
+    console.log(`[DEBUG] API PUT: variants:`, JSON.stringify(variants))
 
-    // update item
+    // update item — try to use numeric id if it looks like one
+    console.log(`[DEBUG] Attempting to update menu_items with id=${id}`)
     const upd = await supabaseAdmin.from('menu_items').update(item).eq('id', id)
     if (upd.error) {
-      console.error('Supabase update menu_items error:', upd.error)
+      console.error('[ERROR] Supabase update menu_items error:', upd.error)
+      console.error('[ERROR] Full error object:', JSON.stringify(upd.error))
       return new Response(JSON.stringify({ error: upd.error }), { status: 500 })
     }
 
