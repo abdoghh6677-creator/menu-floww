@@ -1807,10 +1807,10 @@ export default function MenuPage({ params }) {
 
               {/* Order Type Selection */}
               <div className={`grid gap-2 ${
-                [checkoutRestaurant?.accepts_dine_in, checkoutRestaurant?.accepts_delivery, checkoutRestaurant?.accepts_pickup !== false].filter(Boolean).length === 3 ? 'grid-cols-3' : 
-                [checkoutRestaurant?.accepts_dine_in, checkoutRestaurant?.accepts_delivery, checkoutRestaurant?.accepts_pickup !== false].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
+                [(checkoutRestaurant || restaurant)?.accepts_dine_in, (checkoutRestaurant || restaurant)?.accepts_delivery, (checkoutRestaurant || restaurant)?.accepts_pickup !== false].filter(Boolean).length === 3 ? 'grid-cols-3' : 
+                [(checkoutRestaurant || restaurant)?.accepts_dine_in, (checkoutRestaurant || restaurant)?.accepts_delivery, (checkoutRestaurant || restaurant)?.accepts_pickup !== false].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
               }`}>
-                {checkoutRestaurant?.accepts_dine_in && (
+                {(checkoutRestaurant || restaurant)?.accepts_dine_in && (
                   <button
                     type="button"
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'dine-in' })}
@@ -1819,7 +1819,7 @@ export default function MenuPage({ params }) {
                     {t.dineIn}
                   </button>
                 )}
-                {checkoutRestaurant?.accepts_delivery && (
+                {(checkoutRestaurant || restaurant)?.accepts_delivery && (
                   <button
                     type="button"
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'delivery' })}
@@ -1828,7 +1828,7 @@ export default function MenuPage({ params }) {
                     {t.deliveryType}
                   </button>
                 )}
-                {checkoutRestaurant?.accepts_pickup !== false && (
+                {(checkoutRestaurant || restaurant)?.accepts_pickup !== false && (
                   <button
                     type="button"
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'pickup' })}
@@ -1934,7 +1934,7 @@ export default function MenuPage({ params }) {
               <div className="border-t pt-4">
                 <label className="block font-medium mb-3">{t.paymentMethod} *</label>
                 <div className="space-y-2">
-                  {checkoutRestaurant?.accepts_cash !== false && (
+                  {(checkoutRestaurant || restaurant)?.accepts_cash !== false && (
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('cash')}
@@ -1949,7 +1949,7 @@ export default function MenuPage({ params }) {
                   </button>
                   )}
 
-                  {checkoutRestaurant?.accepts_instapay && (
+                  {(checkoutRestaurant || restaurant)?.accepts_instapay && (
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('instapay')}
@@ -1964,7 +1964,7 @@ export default function MenuPage({ params }) {
                     </button>
                   )}
 
-                  {checkoutRestaurant?.accepts_visa !== false && (
+                  {(checkoutRestaurant || restaurant)?.accepts_visa !== false && (
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('visa')}
@@ -1985,7 +1985,7 @@ export default function MenuPage({ params }) {
                     <h5 className="font-bold text-purple-900 mb-3 text-sm sm:text-base">💳 {t.instapay}</h5>
 
                     <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
-                      {checkoutRestaurant?.instapay_link && (
+                      {(checkoutRestaurant || restaurant)?.instapay_link && (
                         <div className="space-y-3">
                           <a
                             href={restaurant.instapay_link}
@@ -2022,7 +2022,7 @@ export default function MenuPage({ params }) {
                 <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
                   <p className="font-semibold text-purple-900">💳 {t.instapay}</p>
                   <p className="text-sm text-purple-700 mt-1">
-                    {t.paymentInstruction} <strong dir="ltr">{checkoutRestaurant?.instapay_receipt_number || checkoutRestaurant?.instapay_phone || '-'}</strong>
+                    {t.paymentInstruction} <strong dir="ltr">{(checkoutRestaurant || restaurant)?.instapay_receipt_number || (checkoutRestaurant || restaurant)?.instapay_phone || '-'}</strong>
                   </p>
                 </div>
               )}
