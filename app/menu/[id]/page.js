@@ -1,5 +1,6 @@
  'use client'
 import { useState, useEffect } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { supabase } from '@/lib/supabase'
 import { detectLanguage } from '@/lib/translations'
@@ -926,7 +927,7 @@ export default function MenuPage({ params }) {
         name: `${addon.name} (إضافة)`,
         price: parseFloat(addon.price),
         totalPrice: parseFloat(addon.price),
-        cartId: Date.now() + index + Math.floor(Math.random() * 1000),
+        cartId: uuidv4(),
         // keep a loose reference to the main item for UI grouping but do not auto-remove
         parentCartId: existingItem.cartId,
         quantity: 1,
@@ -940,7 +941,7 @@ export default function MenuPage({ params }) {
       return
     }
 
-    const mainCartId = Date.now()
+    const mainCartId = uuidv4()
     
     const mainItem = {
       ...item,
@@ -956,7 +957,7 @@ export default function MenuPage({ params }) {
       name: `${addon.name} (إضافة)`,
       price: parseFloat(addon.price),
       totalPrice: parseFloat(addon.price),
-      cartId: mainCartId + index + 1,
+      cartId: uuidv4(),
       parentCartId: mainCartId,
       quantity: 1,
       selectedAddons: [],
@@ -978,14 +979,14 @@ export default function MenuPage({ params }) {
       return acc
     }, -1)
 
-    const parentCartId = lastMainIndex !== -1 ? cart[lastMainIndex].cartId : Date.now() + Math.floor(Math.random() * 1000)
+    const parentCartId = lastMainIndex !== -1 ? cart[lastMainIndex].cartId : uuidv4()
 
     const addonItems = selectedAddons.map((addon, index) => ({
       id: addon.id,
       name: `${addon.name} (إضافة)`,
       price: parseFloat(addon.price),
       totalPrice: parseFloat(addon.price),
-      cartId: Date.now() + index + Math.floor(Math.random() * 100000),
+      cartId: uuidv4(),
       parentCartId,
       quantity: 1,
       selectedAddons: [],
