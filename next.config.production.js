@@ -46,16 +46,16 @@ module.exports = {
           },
         ],
       },
-      // الصفحات الديناميكية - تحديث الـ cache كل 5 ثواني فقط (مشكلة على الهاتف)
+      // الصفحات الديناميكية - تعطيل الكاش على صفحات القائمة لتجنب المحتوى القديم على الموبايل
       {
         source: '/menu/:id',
         headers: [
           {
             key: 'Cache-Control',
-            value: 's-maxage=5, stale-while-revalidate=604800',
+            value: 'no-store, must-revalidate',
           },
         ],
-      }
+      },
       // جميع الصفحات الأخرى
       {
         source: '/:path*',
