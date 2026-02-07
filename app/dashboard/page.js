@@ -669,103 +669,28 @@ const checkUser = async () => {
       price: parseFloat(newItem.price)
     }
 
-    // try insert; if DB doesn't have promotion columns, retry without them
-    let itemData = null
-    let error = null
+    // Send to server API to create item + addons + variants atomically
     try {
-      const res = await supabase.from('menu_items').insert([payload]).select()
-      itemData = res.data
-      error = res.error
-    } catch (e) {
-      // supabase client may throw in some environments
-      console.error('Unexpected error inserting item (throw):', e)
-      error = e
-    }
+      const res = await fetch('/api/admin/menu-item', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item: payload, addons: finalAddons, variants: finalVariants })
+      })
 
-    if (error && typeof error === 'object') {
-      // inspect error for missing column clues
-      const errMsg = (error.message || error.details || JSON.stringify(error)).toLowerCase()
-      if (errMsg.includes('has_promotion') || errMsg.includes('promotion_discount') || errMsg.includes('column') && errMsg.includes('does not exist')) {
-        console.warn('Promotion columns appear missing in DB. Retrying insert without promotion fields.')
-        const fallback = { ...payload }
-        delete fallback.has_promotion
-        delete fallback.promotion_discount
-        try {
-          const res2 = await supabase.from('menu_items').insert([fallback]).select()
-          itemData = res2.data
-          error = res2.error
-        } catch (e2) {
-          console.error('Unexpected error inserting fallback item (throw):', e2)
-          error = e2
-        }
-        if (!error) {
-          alert('تم إضافة الصنف بنجاح (بدون حقول العروض — الرجاء تحديث قاعدة البيانات لاحقاً).')
-        }
+      const body = await res.json()
+      if (!res.ok) {
+        console.error('Server error creating item:', body)
+        alert('حدث خطأ أثناء إضافة الصنف: ' + (body?.error?.message || JSON.stringify(body)))
+        return
       }
-    }
 
-    if (!error && itemData && finalAddons.length > 0) {
-      // ترجمة أسماء الإضافات
-      const addonsToInsert = await Promise.all(finalAddons.map(async (addon) => {
-        const addonTranslations = await translateText(addon.name)
-        return {
-          menu_item_id: itemData[0].id,
-          name: addon.name,
-          name_en: addonTranslations.en,
-          name_fr: addonTranslations.fr,
-          name_de: addonTranslations.de,
-          name_ru: addonTranslations.ru,
-          name_ja: addonTranslations.ja,
-          price: parseFloat(addon.price) || 0
-        }
-      }))
-
-      const { error: addonsError } = await supabase
-        .from('menu_addons')
-        .insert(addonsToInsert)
-      
-      if (addonsError) console.error('Error adding addons:', addonsError)
-    }
-
-    // إضافة الأحجام مع الترجمة
-    if (!error && itemData && finalVariants.length > 0) {
-      const variantsToInsert = await Promise.all(finalVariants.map(async (variant) => {
-        const variantTranslations = await translateText(variant.name)
-        return {
-          menu_item_id: itemData[0].id,
-          name: variant.name,
-          name_en: variantTranslations.en,
-          name_fr: variantTranslations.fr,
-          name_de: variantTranslations.de,
-          name_ru: variantTranslations.ru,
-          name_ja: variantTranslations.ja,
-          price: parseFloat(variant.price),
-          is_default: variant.is_default || false
-        }
-      }))
-      
-      const { error: variantsError } = await supabase.from('item_variants').insert(variantsToInsert)
-      if (variantsError) {
-        console.error('Error adding variants:', variantsError)
-        error = variantsError
-      }
-    }
-
-    if (error) {
-      // better logging for debugging
-      console.error('Error adding item:', error)
-      try {
-        // show richer info when available
-        const info = error.message || error.details || error.hint || JSON.stringify(error)
-        alert('حدث خطأ أثناء إضافة الصنف: ' + info)
-      } catch (e) {
-        alert('حدث خطأ أثناء إضافة الصنف')
-      }
-    } else {
-      // ✅ Only reset and reload if everything succeeded
+      // success
       resetForm()
       loadMenuItems(restaurant.id)
       alert('تم إضافة الصنف مع الأحجام والإضافات بنجاح!')
+    } catch (e) {
+      console.error('Network/server error creating item:', e)
+      alert('حدث خطأ أثناء إضافة الصنف: ' + (e.message || String(e)))
     }
   }
 
@@ -817,97 +742,27 @@ const checkUser = async () => {
       hide_when_available: newItem.hide_when_available || false
     }
 
-    let updError = null
+    // Send update to server API (atomic replace of item + addons + variants)
     try {
-      const res = await supabase.from('menu_items').update(updatePayload).eq('id', editingItem.id)
-      updError = res.error
-    } catch (e) {
-      console.error('Unexpected error updating item (throw):', e)
-      updError = e
-    }
+      const res = await fetch(`/api/admin/menu-item?id=${editingItem.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item: updatePayload, addons: finalAddons, variants: finalVariants })
+      })
 
-    if (updError && typeof updError === 'object') {
-      const errMsg = (updError.message || updError.details || JSON.stringify(updError)).toLowerCase()
-      if (errMsg.includes('has_promotion') || errMsg.includes('promotion_discount') || (errMsg.includes('column') && errMsg.includes('does not exist'))) {
-        console.warn('Promotion columns appear missing in DB. Retrying update without promotion fields.')
-        const fallback = { ...updatePayload }
-        delete fallback.has_promotion
-        delete fallback.promotion_discount
-        delete fallback.hide_when_available
-        try {
-          const res2 = await supabase.from('menu_items').update(fallback).eq('id', editingItem.id)
-          updError = res2.error
-        } catch (e2) {
-          console.error('Unexpected error updating fallback item (throw):', e2)
-          updError = e2
-        }
+      const body = await res.json()
+      if (!res.ok) {
+        console.error('Server error updating item:', body)
+        alert('حدث خطأ أثناء تحديث الصنف: ' + (body?.error?.message || JSON.stringify(body)))
+        return
       }
+
+      resetForm()
+      loadMenuItems(restaurant.id)
+    } catch (e) {
+      console.error('Network/server error updating item:', e)
+      alert('حدث خطأ أثناء تحديث الصنف: ' + (e.message || String(e)))
     }
-
-    const error = updError
-
-    if (error) {
-      console.error('Error updating item:', error)
-      alert('حدث خطأ أثناء تحديث الصنف: ' + (error.message || JSON.stringify(error)))
-      return
-    }
-
-    const { error: deleteAddonsError } = await supabase
-      .from('menu_addons')
-      .delete()
-      .eq('menu_item_id', editingItem.id)
-
-    if (deleteAddonsError) {
-      console.error('Error deleting addons:', deleteAddonsError)
-    } else if (finalAddons.length > 0) {
-      const addonsToInsert = await Promise.all(finalAddons.map(async (addon) => {
-        const addonTranslations = await translateText(addon.name)
-        return {
-          menu_item_id: editingItem.id,
-          name: addon.name,
-          name_en: addonTranslations.en,
-          name_fr: addonTranslations.fr,
-          name_de: addonTranslations.de,
-          name_ru: addonTranslations.ru,
-          name_ja: addonTranslations.ja,
-          price: parseFloat(addon.price) || 0
-        }
-      }))
-
-      const { error: insertAddonsError } = await supabase
-        .from('menu_addons')
-        .insert(addonsToInsert)
-      
-      if (insertAddonsError) console.error('Error inserting addons:', insertAddonsError)
-    }
-
-    // حذف الأحجام القديمة وإضافة الجديدة
-    await supabase
-      .from('item_variants')
-      .delete()
-      .eq('menu_item_id', editingItem.id)
-
-    if (finalVariants.length > 0) {
-      const variantsToInsert = await Promise.all(finalVariants.map(async (variant) => {
-        const variantTranslations = await translateText(variant.name)
-        return {
-          menu_item_id: editingItem.id,
-          name: variant.name,
-          name_en: variantTranslations.en,
-          name_fr: variantTranslations.fr,
-          name_de: variantTranslations.de,
-          name_ru: variantTranslations.ru,
-          name_ja: variantTranslations.ja,
-          price: parseFloat(variant.price),
-          is_default: variant.is_default || false
-        }
-      }))
-
-      await supabase.from('item_variants').insert(variantsToInsert)
-    }
-
-    resetForm()
-    loadMenuItems(restaurant.id)
   }
 
   const startEdit = async (item) => {
