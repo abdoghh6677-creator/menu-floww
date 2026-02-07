@@ -863,6 +863,54 @@ export default function MenuPage({ params }) {
     return () => { mounted = false }
   }, [showCheckout, id])
 
+  // When the page becomes visible or gains focus, refetch restaurant data
+  // This helps mobile users receive admin changes (payment/delivery) when they return
+  useEffect(() => {
+    if (!supabase || !id) return
+    let mounted = true
+
+    const refetchRestaurant = async () => {
+      try {
+        const { data: fresh, error } = await supabase
+          .from('restaurants')
+          .select('*')
+          .eq('id', id)
+          .single()
+
+        if (error) {
+          console.warn('Visibility refetch error:', error)
+          return
+        }
+
+        try { localStorage.removeItem(`payment_settings_${id}`) } catch (e) {}
+
+        if (mounted && fresh) {
+          setRestaurant(fresh)
+          setCheckoutRestaurant(prev => prev ? { ...prev, ...fresh } : null)
+        }
+      } catch (e) {
+        console.error('Visibility refetch exception:', e)
+      }
+    }
+
+    const handleVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        refetchRestaurant()
+      }
+    }
+
+    window.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('focus', refetchRestaurant)
+
+    return () => {
+      mounted = false
+      try {
+        window.removeEventListener('visibilitychange', handleVisibility)
+        window.removeEventListener('focus', refetchRestaurant)
+      } catch (e) {}
+    }
+  }, [id])
+
   const loadMenu = async () => {
     const { data: restaurantData, error: restaurantError } = await supabase
       .from('restaurants')
