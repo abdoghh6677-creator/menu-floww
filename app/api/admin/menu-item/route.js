@@ -133,14 +133,17 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: upd.error }), { status: 500 })
     }
 
-    // replace addons
-    const delAddons = await supabaseAdmin.from('menu_addons').delete().eq('menu_item_id', id)
+    // replace addons (use resolved UUID targetId)
+    const delAddons = await supabaseAdmin.from('menu_addons').delete().eq('menu_item_id', targetId)
     if (delAddons.error) {
       console.error('Supabase delete menu_addons error:', delAddons.error)
       return new Response(JSON.stringify({ error: delAddons.error }), { status: 500 })
     }
     if (addons && addons.length > 0) {
-      const addonsToInsert = addons.map(a => ({ ...a, menu_item_id: id }))
+      const addonsToInsert = addons.map(a => {
+        const aid = a.id && typeof a.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(a.id) ? a.id : randomUUID()
+        return ({ ...a, id: aid, menu_item_id: targetId })
+      })
       const { error: addonsError } = await supabaseAdmin.from('menu_addons').insert(addonsToInsert)
       if (addonsError) {
         console.error('Supabase insert menu_addons error (PUT):', addonsError)
@@ -149,13 +152,16 @@ export async function PUT(req) {
     }
 
     // replace variants
-    const delVariants = await supabaseAdmin.from('item_variants').delete().eq('menu_item_id', id)
+    const delVariants = await supabaseAdmin.from('item_variants').delete().eq('menu_item_id', targetId)
     if (delVariants.error) {
       console.error('Supabase delete item_variants error:', delVariants.error)
       return new Response(JSON.stringify({ error: delVariants.error }), { status: 500 })
     }
     if (variants && variants.length > 0) {
-      const variantsToInsert = variants.map(v => ({ ...v, menu_item_id: id }))
+      const variantsToInsert = variants.map(v => {
+        const vid = v.id && typeof v.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(v.id) ? v.id : randomUUID()
+        return ({ ...v, id: vid, menu_item_id: targetId })
+      })
       const { error: variantsError } = await supabaseAdmin.from('item_variants').insert(variantsToInsert)
       if (variantsError) {
         console.error('Supabase insert item_variants error (PUT):', variantsError)
