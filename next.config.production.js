@@ -46,16 +46,16 @@ module.exports = {
           },
         ],
       },
-      // الصفحات الديناميكية - تحديث الـ cache كل دقيقة
+      // الصفحات الديناميكية - تحديث الـ cache كل 5 ثواني فقط (مشكلة على الهاتف)
       {
         source: '/menu/:id',
         headers: [
           {
             key: 'Cache-Control',
-            value: 's-maxage=60, stale-while-revalidate=604800',
+            value: 's-maxage=5, stale-while-revalidate=604800',
           },
         ],
-      },
+      }
       // جميع الصفحات الأخرى
       {
         source: '/:path*',

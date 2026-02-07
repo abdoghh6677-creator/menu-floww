@@ -483,6 +483,8 @@ export default function MenuPage({ params }) {
   const [cart, setCart] = useState([])
   const [showCart, setShowCart] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutRestaurant, setCheckoutRestaurant] = useState(null)
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [estimatedTime, setEstimatedTime] = useState(30)
   const [promotions, setPromotions] = useState([])
@@ -749,29 +751,18 @@ export default function MenuPage({ params }) {
 
   useEffect(() => {
     if (restaurant) {
-      // تحميل إعدادات الدفع من localStorage
-      let paymentSettings = {}
-      try {
-        const saved = localStorage.getItem(`payment_settings_${restaurant.id}`)
-        if (saved) {
-          paymentSettings = JSON.parse(saved)
-        }
-      } catch (e) {
-        console.error('Error loading payment settings:', e)
-      }
-
-      // استخدام الإعدادات المحفوظة أو قيم المطعم
+      // Use DB values as source of truth for payment/delivery settings
       const restaurantSettings = {
-        accepts_dine_in: paymentSettings.accepts_dine_in ?? restaurant.accepts_dine_in ?? true,
-        accepts_delivery: paymentSettings.accepts_delivery ?? restaurant.accepts_delivery ?? true,
-        accepts_pickup: paymentSettings.accepts_pickup ?? restaurant.accepts_pickup ?? true,
-        accepts_cash: paymentSettings.accepts_cash ?? (restaurant.accepts_cash !== false ? true : false),
-        accepts_instapay: paymentSettings.accepts_instapay ?? restaurant.accepts_instapay ?? false,
-        whatsapp_notifications: paymentSettings.whatsapp_notifications ?? restaurant.whatsapp_notifications ?? false,
-        whatsapp_number: paymentSettings.whatsapp_number ?? restaurant.whatsapp_number ?? ''
+        accepts_dine_in: restaurant.accepts_dine_in ?? true,
+        accepts_delivery: restaurant.accepts_delivery ?? true,
+        accepts_pickup: restaurant.accepts_pickup ?? true,
+        accepts_cash: restaurant.accepts_cash !== undefined ? restaurant.accepts_cash : true,
+        accepts_instapay: restaurant.accepts_instapay === true,
+        whatsapp_notifications: restaurant.whatsapp_notifications ?? false,
+        whatsapp_number: restaurant.whatsapp_number ?? ''
       }
 
-      // تحديث نوع الطلب الافتراضي بناءً على إعدادات المطعم
+      // update default order type based on restaurant settings
       const validTypes = []
       if (restaurantSettings.accepts_dine_in) validTypes.push('dine-in')
       if (restaurantSettings.accepts_delivery) validTypes.push('delivery')
@@ -784,13 +775,93 @@ export default function MenuPage({ params }) {
         return prev
       })
 
-      // تحديث طريقة الدفع الافتراضية إذا كان الكاش غير متاح
+      // update default payment method if cash is not accepted
       if (restaurantSettings.accepts_cash === false) {
         if (restaurantSettings.accepts_instapay) setPaymentMethod('instapay')
         else setPaymentMethod('')
       }
     }
   }, [restaurant])
+
+  // Subscribe to restaurant updates so open menu pages (phones/desktops)
+  // receive admin changes immediately and ignore local overrides.
+  useEffect(() => {
+    if (!supabase || !id) return
+
+    let channel
+    try {
+      channel = supabase
+        .channel(`restaurants_changes_${id}`)
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'restaurants', filter: `id=eq.${id}` },
+          (payload) => {
+            console.log('🔔 Realtime update received:', payload)
+            try {
+              // clear local override so DB becomes authoritative
+              localStorage.removeItem(`payment_settings_${id}`)
+            } catch (e) {
+              // ignore
+            }
+            if (payload && payload.new) {
+              console.log('✅ Updating restaurant state from realtime:', payload.new)
+              setRestaurant(prev => ({ ...prev, ...payload.new }))
+              // Also update checkout restaurant if it's open
+              setCheckoutRestaurant(prev => prev ? { ...prev, ...payload.new } : payload.new)
+            }
+          }
+        )
+        .subscribe()
+    } catch (e) {
+      console.error('Realtime subscription error:', e)
+    }
+
+    return () => {
+      try {
+        if (channel) {
+          channel.unsubscribe()
+          if (supabase.removeChannel) supabase.removeChannel(channel)
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [id])
+
+  // When user opens checkout, ensure we have freshest DB values (avoid stale localStorage on phones)
+  useEffect(() => {
+    if (!showCheckout) return
+    let mounted = true
+
+    const refetch = async () => {
+      try {
+        const { data: fresh, error } = await supabase
+          .from('restaurants')
+          .select('*')
+          .eq('id', id)
+          .single()
+
+        if (error) {
+          console.error('Error refetching restaurant for checkout:', error)
+          return
+        }
+
+        try {
+          localStorage.removeItem(`payment_settings_${id}`)
+        } catch (e) {
+          // ignore
+        }
+
+        if (mounted && fresh) setRestaurant(fresh)
+      } catch (e) {
+        console.error('Refetch exception:', e)
+      }
+    }
+
+    refetch()
+
+    return () => { mounted = false }
+  }, [showCheckout, id])
 
   const loadMenu = async () => {
     const { data: restaurantData, error: restaurantError } = await supabase
@@ -803,30 +874,12 @@ export default function MenuPage({ params }) {
       console.error('Error loading restaurant:', restaurantError)
     }
     
-    // إضافة إعدادات الدفع من localStorage إذا كانت موجودة
+    // Ensure safe defaults for payment/delivery settings from DB (localStorage must not override admin settings)
     if (restaurantData) {
-      try {
-        const saved = localStorage.getItem(`payment_settings_${restaurantData.id}`)
-        if (saved) {
-          const paymentSettings = JSON.parse(saved)
-          restaurantData.accepts_delivery = paymentSettings.accepts_delivery ?? restaurantData.accepts_delivery
-          restaurantData.accepts_dine_in = paymentSettings.accepts_dine_in ?? restaurantData.accepts_dine_in
-          restaurantData.accepts_pickup = paymentSettings.accepts_pickup ?? restaurantData.accepts_pickup
-          restaurantData.accepts_cash = paymentSettings.accepts_cash ?? restaurantData.accepts_cash
-          restaurantData.accepts_instapay = paymentSettings.accepts_instapay ?? restaurantData.accepts_instapay
-          restaurantData.instapay_username = paymentSettings.instapay_username ?? restaurantData.instapay_username
-          restaurantData.instapay_link = paymentSettings.instapay_link ?? restaurantData.instapay_link
-          restaurantData.instapay_receipt_number = paymentSettings.instapay_receipt_number ?? restaurantData.instapay_receipt_number
-          restaurantData.instapay_phone = paymentSettings.instapay_phone ?? restaurantData.instapay_phone
-          restaurantData.whatsapp_notifications = paymentSettings.whatsapp_notifications ?? restaurantData.whatsapp_notifications
-          restaurantData.whatsapp_number = paymentSettings.whatsapp_number ?? restaurantData.whatsapp_number
-        }
-      } catch (e) {
-        console.error('Error loading payment settings from localStorage:', e)
-      }
-      
-      // Set safe defaults for undefined payment settings
-      restaurantData.accepts_cash = restaurantData.accepts_cash !== false
+      restaurantData.accepts_delivery = restaurantData.accepts_delivery ?? true
+      restaurantData.accepts_dine_in = restaurantData.accepts_dine_in ?? true
+      restaurantData.accepts_pickup = restaurantData.accepts_pickup ?? true
+      restaurantData.accepts_cash = restaurantData.accepts_cash !== undefined ? restaurantData.accepts_cash : true
       restaurantData.accepts_instapay = restaurantData.accepts_instapay === true
       restaurantData.accepts_visa = restaurantData.accepts_visa !== false
     }
@@ -1281,6 +1334,65 @@ export default function MenuPage({ params }) {
 
   }
 
+  // Open checkout: refetch restaurant from DB to ensure freshest payment/delivery settings
+  const openCheckout = async () => {
+    try {
+      console.log('🟢 openCheckout: STARTING refetch for restaurant', id)
+      console.log('📊 Current restaurant state:', restaurant)
+      setCheckoutLoading(true)
+      setShowCart(false)
+
+      // Force disable any caching on this query
+      const { data: fresh, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      console.log('🟢 openCheckout: DB response - error:', error)
+      console.log('📊 Fresh from DB:', fresh)
+
+      if (error) {
+        console.error('❌ Error refetching restaurant for checkout:', error)
+        console.warn('⚠️ Falling back to current restaurant state')
+        setCheckoutRestaurant(restaurant || {})
+        setShowCheckout(true)
+        return
+      }
+
+      if (fresh) {
+        console.log('✅ Comparing DB data:')
+        console.log('   accepts_cash (fresh):', fresh.accepts_cash, '| (current):', restaurant?.accepts_cash)
+        console.log('   accepts_instapay (fresh):', fresh.accepts_instapay, '| (current):', restaurant?.accepts_instapay)
+        console.log('   accepts_delivery (fresh):', fresh.accepts_delivery, '| (current):', restaurant?.accepts_delivery)
+        console.log('   accepts_dine_in (fresh):', fresh.accepts_dine_in, '| (current):', restaurant?.accepts_dine_in)
+        console.log('   accepts_pickup (fresh):', fresh.accepts_pickup, '| (current):', restaurant?.accepts_pickup)
+        
+        setRestaurant(fresh)
+        setCheckoutRestaurant(fresh)
+        
+        // Clear all localStorage payment overrides
+        try { 
+          localStorage.removeItem(`payment_settings_${id}`)
+          console.log('✅ Cleared localStorage payment_settings')
+        } catch (e) {}
+        
+        // Critical: force React re-render
+        setShowCheckout(false)
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
+
+      console.log('✅ Setting showCheckout to true with fresh data')
+      setShowCheckout(true)
+    } catch (e) {
+      console.error('❌ openCheckout exception:', e)
+      setCheckoutRestaurant(restaurant || {})
+      setShowCheckout(true)
+    } finally {
+      setCheckoutLoading(false)
+    }
+  }
+
   // استخراج العروض المتاحة من الأصناف
   const availablePromotions = menuItems.filter(item => item.has_promotion && item.promotion_discount)
 
@@ -1651,7 +1763,7 @@ export default function MenuPage({ params }) {
                   <span>{getCartTotal()} {t.currency}</span>
                 </div>
                 <button 
-                  onClick={() => { setShowCart(false); setShowCheckout(true); }}
+                  onClick={() => { setShowCart(false); openCheckout(); }}
                   className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold"
                 >
                   {t.checkout}
@@ -1667,6 +1779,12 @@ export default function MenuPage({ params }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
           <div className={`w-full max-w-md rounded-lg p-3 sm:p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[95vh] sm:max-h-[90vh] overflow-y-auto`}>
             <h3 className="text-xl font-bold mb-4">{t.checkout}</h3>
+            {checkoutLoading && (
+              <div className="text-center py-4">
+                <div className="text-lg font-semibold">🔄 جاري تحديث الإعدادات...</div>
+              </div>
+            )}
+            {!checkoutLoading && (
             <form onSubmit={handleCheckout} className="space-y-4">
               <input 
                 type="text" 
@@ -1689,10 +1807,10 @@ export default function MenuPage({ params }) {
 
               {/* Order Type Selection */}
               <div className={`grid gap-2 ${
-                [restaurant.accepts_dine_in, restaurant.accepts_delivery, restaurant.accepts_pickup !== false].filter(Boolean).length === 3 ? 'grid-cols-3' : 
-                [restaurant.accepts_dine_in, restaurant.accepts_delivery, restaurant.accepts_pickup !== false].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
+                [checkoutRestaurant?.accepts_dine_in, checkoutRestaurant?.accepts_delivery, checkoutRestaurant?.accepts_pickup !== false].filter(Boolean).length === 3 ? 'grid-cols-3' : 
+                [checkoutRestaurant?.accepts_dine_in, checkoutRestaurant?.accepts_delivery, checkoutRestaurant?.accepts_pickup !== false].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
               }`}>
-                {restaurant.accepts_dine_in && (
+                {checkoutRestaurant?.accepts_dine_in && (
                   <button
                     type="button"
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'dine-in' })}
@@ -1701,7 +1819,7 @@ export default function MenuPage({ params }) {
                     {t.dineIn}
                   </button>
                 )}
-                {restaurant.accepts_delivery && (
+                {checkoutRestaurant?.accepts_delivery && (
                   <button
                     type="button"
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'delivery' })}
@@ -1710,7 +1828,7 @@ export default function MenuPage({ params }) {
                     {t.deliveryType}
                   </button>
                 )}
-                {restaurant.accepts_pickup !== false && (
+                {checkoutRestaurant?.accepts_pickup !== false && (
                   <button
                     type="button"
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'pickup' })}
@@ -1816,7 +1934,7 @@ export default function MenuPage({ params }) {
               <div className="border-t pt-4">
                 <label className="block font-medium mb-3">{t.paymentMethod} *</label>
                 <div className="space-y-2">
-                  {restaurant.accepts_cash !== false && (
+                  {checkoutRestaurant?.accepts_cash !== false && (
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('cash')}
@@ -1831,7 +1949,7 @@ export default function MenuPage({ params }) {
                   </button>
                   )}
 
-                  {restaurant.accepts_instapay && (
+                  {checkoutRestaurant?.accepts_instapay && (
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('instapay')}
@@ -1846,7 +1964,7 @@ export default function MenuPage({ params }) {
                     </button>
                   )}
 
-                  {restaurant.accepts_visa !== false && (
+                  {checkoutRestaurant?.accepts_visa !== false && (
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('visa')}
@@ -1867,7 +1985,7 @@ export default function MenuPage({ params }) {
                     <h5 className="font-bold text-purple-900 mb-3 text-sm sm:text-base">💳 {t.instapay}</h5>
 
                     <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4">
-                      {restaurant?.instapay_link && (
+                      {checkoutRestaurant?.instapay_link && (
                         <div className="space-y-3">
                           <a
                             href={restaurant.instapay_link}
@@ -1904,7 +2022,7 @@ export default function MenuPage({ params }) {
                 <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
                   <p className="font-semibold text-purple-900">💳 {t.instapay}</p>
                   <p className="text-sm text-purple-700 mt-1">
-                    {t.paymentInstruction} <strong dir="ltr">{restaurant.instapay_receipt_number || restaurant.instapay_phone || '-'}</strong>
+                    {t.paymentInstruction} <strong dir="ltr">{checkoutRestaurant?.instapay_receipt_number || checkoutRestaurant?.instapay_phone || '-'}</strong>
                   </p>
                 </div>
               )}
@@ -1941,6 +2059,7 @@ export default function MenuPage({ params }) {
               </button>
               <button type="button" onClick={() => setShowCheckout(false)} className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg">{t.cancel}</button>
             </form>
+            )}
           </div>
         </div>
       )}
