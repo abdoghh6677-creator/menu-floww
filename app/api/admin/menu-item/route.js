@@ -38,7 +38,10 @@ export async function POST(req) {
     // itemId already set above from randomUUID()
 
     if (addons && addons.length > 0) {
-      const addonsToInsert = addons.map(a => ({ ...a, menu_item_id: itemId }))
+      const addonsToInsert = addons.map(a => {
+        const id = a.id && typeof a.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(a.id) ? a.id : randomUUID()
+        return ({ ...a, id, menu_item_id: itemId })
+      })
       const { error: addonsError } = await supabaseAdmin.from('menu_addons').insert(addonsToInsert)
       if (addonsError) {
         console.error('Supabase insert menu_addons error:', addonsError)
@@ -47,7 +50,10 @@ export async function POST(req) {
     }
 
     if (variants && variants.length > 0) {
-      const variantsToInsert = variants.map(v => ({ ...v, menu_item_id: itemId }))
+      const variantsToInsert = variants.map(v => {
+        const id = v.id && typeof v.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(v.id) ? v.id : randomUUID()
+        return ({ ...v, id, menu_item_id: itemId })
+      })
       const { error: variantsError } = await supabaseAdmin.from('item_variants').insert(variantsToInsert)
       if (variantsError) {
         console.error('Supabase insert item_variants error:', variantsError)
@@ -83,7 +89,44 @@ export async function PUT(req) {
 
     // update item — try to use numeric id if it looks like one
     console.log(`[DEBUG] Attempting to update menu_items with id=${id}`)
-    const upd = await supabaseAdmin.from('menu_items').update(item).eq('id', id)
+
+    // If the provided id is not a UUID (e.g., a temporary Date.now() value),
+    // attempt to resolve the real menu_item by matching on stable fields
+    // (restaurant_id + name + price). This helps when the client used a
+    // temporary numeric id and then attempts to PUT updates.
+    const isUuid = (s) => typeof s === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(s)
+    let targetId = id
+    if (!isUuid(id)) {
+      console.warn('[WARN] Provided id is not a UUID, attempting to resolve real item id')
+      try {
+        if (item && item.restaurant_id && item.name) {
+          const found = await supabaseAdmin.from('menu_items')
+            .select('id')
+            .eq('restaurant_id', item.restaurant_id)
+            .eq('name', item.name)
+            .eq('price', item.price)
+            .order('created_at', { ascending: false })
+            .limit(1)
+
+          if (found.error) {
+            console.error('[ERROR] lookup menu_item by attributes failed:', found.error)
+          } else if (found.data && found.data.length > 0) {
+            targetId = found.data[0].id
+            console.log('[DEBUG] Resolved real menu_item id ->', targetId)
+          } else {
+            console.warn('[WARN] Could not resolve real id for temporary id:', id)
+            return new Response(JSON.stringify({ error: 'Invalid id: not a UUID and could not resolve real item. Refresh and try again.' }), { status: 400 })
+          }
+        } else {
+          return new Response(JSON.stringify({ error: 'Invalid id and insufficient item data to resolve real item' }), { status: 400 })
+        }
+      } catch (err) {
+        console.error('[ERROR] exception while resolving real id:', err)
+        return new Response(JSON.stringify({ error: 'Server error while resolving item id' }), { status: 500 })
+      }
+    }
+
+    const upd = await supabaseAdmin.from('menu_items').update(item).eq('id', targetId)
     if (upd.error) {
       console.error('[ERROR] Supabase update menu_items error:', upd.error)
       console.error('[ERROR] Full error object:', JSON.stringify(upd.error))
