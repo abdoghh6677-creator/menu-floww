@@ -152,6 +152,36 @@ export default function Dashboard() {
     whatsapp_number: ''
   })
 
+  // Helper: safely update restaurants row, retrying if schema cache reports missing columns
+  const safeUpdateRestaurant = async (payload) => {
+    if (!restaurant || !restaurant.id) return { error: { message: 'No restaurant' } }
+    let toSave = { ...payload }
+    // try up to 5 times removing missing columns reported by the DB
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .update(toSave)
+        .eq('id', restaurant.id)
+
+      if (!error) return { data }
+
+      const msg = (error && (error.message || error.details || '')) + ''
+      const m = msg.match(/Could not find the '([^']+)' column/)
+      if (m && m[1]) {
+        const col = m[1]
+        // remove the offending column and retry
+        if (col in toSave) delete toSave[col]
+        else break
+        continue
+      }
+
+      // Unknown error -> return
+      return { error }
+    }
+
+    return { error: { message: 'Failed to update restaurant after removing missing columns' } }
+  }
+
   const language = (typeof window !== 'undefined') ? detectLanguage() : 'ar'
   const t = paymentTranslations[language] || paymentTranslations['ar']
   
@@ -938,11 +968,8 @@ async function checkUser() {
     ,instapay_username: settings.instapay_username || ''
     }
 
-    const { error } = await supabase
-      .from('restaurants')
-      .update(settingsToSave)
-      .eq('id', restaurant.id)
-    
+    const { data, error } = await safeUpdateRestaurant(settingsToSave)
+
     if (!error) {
       // حفظ إعدادات الدفع والواتساب في localStorage
       const paymentSettings = {
@@ -963,7 +990,7 @@ async function checkUser() {
       alert('تم حفظ الإعدادات بنجاح! 🎉')
       checkUser()
     } else {
-      alert('حدث خطأ أثناء الحفظ: ' + error.message)
+      alert('حدث خطأ أثناء الحفظ: ' + (error.message || error))
     }
   }
 
