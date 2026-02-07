@@ -461,17 +461,39 @@ const checkUser = async () => {
   }
 
   const loadMenuItems = async (restaurantId) => {
-    const { data } = await supabase
+    // Fetch items
+    const { data: items } = await supabase
       .from('menu_items')
-      .select(`
-        *,
-        menu_addons(*),
-        menu_item_variants(*)
-      `)
+      .select('*')
       .eq('restaurant_id', restaurantId)
       .order('created_at', { ascending: false })
+    
+    if (!items || items.length === 0) {
+      setMenuItems([])
+      return
+    }
 
-    setMenuItems(data || [])
+    // Fetch all addons and variants for these items
+    const itemIds = items.map(i => i.id)
+    const { data: addons } = await supabase
+      .from('menu_addons')
+      .select('*')
+      .in('menu_item_id', itemIds)
+    
+    const { data: variants } = await supabase
+      .from('item_variants')
+      .select('*')
+      .in('menu_item_id', itemIds)
+
+    // Merge addons and variants into items
+    const itemsWithData = items.map(item => ({
+      ...item,
+      menu_addons: (addons || []).filter(a => a.menu_item_id === item.id),
+      item_variants: (variants || []).filter(v => v.menu_item_id === item.id)
+    }))
+
+    console.log('[DEBUG] loadMenuItems: loaded', itemsWithData.length, 'items with addons/variants')
+    setMenuItems(itemsWithData)
   }
 
   const loadOrders = async (restaurantId) => {
@@ -785,16 +807,24 @@ const checkUser = async () => {
       hide_when_available: item.hide_when_available || false
     })
 
-    const { data } = await supabase
+    console.log('[DEBUG] startEdit: opening item', item.id)
+    
+    const { data, error: addonsError } = await supabase
       .from('menu_addons')
       .select('*')
       .eq('menu_item_id', item.id)
+    
+    if (addonsError) console.error('[ERROR] startEdit: could not fetch addons:', addonsError)
+    console.log('[DEBUG] startEdit: fetched', data?.length || 0, 'addons')
 
     // جلب الأحجام
-    const { data: variantsData } = await supabase
+    const { data: variantsData, error: variantsError } = await supabase
       .from('item_variants')
       .select('*')
       .eq('menu_item_id', item.id)
+    
+    if (variantsError) console.error('[ERROR] startEdit: could not fetch variants:', variantsError)
+    console.log('[DEBUG] startEdit: fetched', variantsData?.length || 0, 'variants')
     
     setAddons(data || [])
     setVariants(variantsData || [])
