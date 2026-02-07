@@ -925,6 +925,17 @@ async function checkUser() {
       delivery_fee: parseFloat(settings.delivery_fee) || 0
     ,instapay_link: settings.instapay_link || null
     ,instapay_receipt_number: settings.instapay_receipt_number || null
+    // persist delivery/payment/whatsapp flags so other clients (phones) see the changes
+    ,accepts_delivery: settings.accepts_delivery
+    ,accepts_dine_in: settings.accepts_dine_in
+    ,accepts_pickup: settings.accepts_pickup
+    ,accepts_instapay: settings.accepts_instapay
+    ,accepts_visa: settings.accepts_visa
+    ,accepts_cash: settings.accepts_cash
+    ,whatsapp_notifications: settings.whatsapp_notifications
+    ,whatsapp_number: settings.whatsapp_number || ''
+    ,instapay_phone: settings.instapay_phone || ''
+    ,instapay_username: settings.instapay_username || ''
     }
 
     const { error } = await supabase
