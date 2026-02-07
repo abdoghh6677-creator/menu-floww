@@ -728,8 +728,8 @@ const checkUser = async () => {
     }
 
     // إضافة الأحجام مع الترجمة
-    if (!error && itemData && variants.length > 0) {
-      const variantsToInsert = await Promise.all(variants.map(async (variant) => {
+    if (!error && itemData && finalVariants.length > 0) {
+      const variantsToInsert = await Promise.all(finalVariants.map(async (variant) => {
         const variantTranslations = await translateText(variant.name)
         return {
           menu_item_id: itemData[0].id,
@@ -887,8 +887,8 @@ const checkUser = async () => {
       .delete()
       .eq('menu_item_id', editingItem.id)
 
-    if (variants.length > 0) {
-      const variantsToInsert = await Promise.all(variants.map(async (variant) => {
+    if (finalVariants.length > 0) {
+      const variantsToInsert = await Promise.all(finalVariants.map(async (variant) => {
         const variantTranslations = await translateText(variant.name)
         return {
           menu_item_id: editingItem.id,
