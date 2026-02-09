@@ -980,11 +980,23 @@ export default function MenuPage({ params }) {
   const filteredItems = menuItems.filter(item => {
     const matchesCategory = selectedCategory === '__ALL__' || item.category === selectedCategory
     const query = searchQuery.toLowerCase()
-    const matchesSearch = searchQuery === '' || 
-      item.name?.toLowerCase().includes(query) ||
-      item.description?.toLowerCase().includes(query) ||
-      item.name_en?.toLowerCase().includes(query) ||
-      item.name_ja?.toLowerCase().includes(query)
+    if (!query) return matchesCategory
+
+    const matchesSearch = (
+      (item.name && item.name.toLowerCase().includes(query)) ||
+      (item.description && item.description.toLowerCase().includes(query)) ||
+      (item.name_en && item.name_en.toLowerCase().includes(query)) ||
+      (item.name_fr && item.name_fr.toLowerCase().includes(query)) ||
+      (item.name_de && item.name_de.toLowerCase().includes(query)) ||
+      (item.name_ru && item.name_ru.toLowerCase().includes(query)) ||
+      (item.name_ja && item.name_ja.toLowerCase().includes(query)) ||
+      (item.description_en && item.description_en.toLowerCase().includes(query)) ||
+      (item.description_fr && item.description_fr.toLowerCase().includes(query)) ||
+      (item.description_de && item.description_de.toLowerCase().includes(query)) ||
+      (item.description_ru && item.description_ru.toLowerCase().includes(query)) ||
+      (item.description_ja && item.description_ja.toLowerCase().includes(query))
+    )
+
     return matchesCategory && matchesSearch
   })
 
@@ -2245,7 +2257,12 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
     }
   }
 
-  const name = language === 'en' && item.name_en ? item.name_en : language === 'ja' && item.name_ja ? item.name_ja : item.name
+  const name = (language === 'en' && item.name_en) ? item.name_en
+    : (language === 'fr' && item.name_fr) ? item.name_fr
+    : (language === 'de' && item.name_de) ? item.name_de
+    : (language === 'ru' && item.name_ru) ? item.name_ru
+    : (language === 'ja' && item.name_ja) ? item.name_ja
+    : item.name
   const description = language === 'en' && item.description_en ? item.description_en : language === 'ja' && item.description_ja ? item.description_ja : language === 'fr' && item.description_fr ? item.description_fr : language === 'de' && item.description_de ? item.description_de : language === 'ru' && item.description_ru ? item.description_ru : item.description
   
   const currentImage = item.image_url

@@ -790,13 +790,16 @@ async function checkUser() {
     const updatePayload = {
       name: newItem.name,
       name_en: newItem.name_en,
+      name_fr: newItem.name_fr,
+      name_de: newItem.name_de,
+      name_ru: newItem.name_ru,
       name_ja: newItem.name_ja,
       description: newItem.description,
-      description_en: translations.en,
-      description_ja: translations.ja,
-      description_fr: translations.fr,
-      description_de: translations.de,
-      description_ru: translations.ru,
+      description_en: newItem.description_en || translations.en,
+      description_fr: newItem.description_fr || translations.fr,
+      description_de: newItem.description_de || translations.de,
+      description_ru: newItem.description_ru || translations.ru,
+      description_ja: newItem.description_ja || translations.ja,
       price: parseFloat(newItem.price),
       category: newItem.category,
       image_url: newItem.image_url,
@@ -833,6 +836,9 @@ async function checkUser() {
     setNewItem({
       name: item.name,
       name_en: item.name_en || '',
+      name_fr: item.name_fr || '',
+      name_de: item.name_de || '',
+      name_ru: item.name_ru || '',
       name_ja: item.name_ja || '',
       description: item.description || '',
       description_en: item.description_en || '',
@@ -876,9 +882,15 @@ async function checkUser() {
     setNewItem({
       name: '',
       name_en: '',
+      name_fr: '',
+      name_de: '',
+      name_ru: '',
       name_ja: '',
       description: '',
       description_en: '',
+      description_fr: '',
+      description_de: '',
+      description_ru: '',
       description_ja: '',
       price: '',
       category: 'مشروبات',
@@ -1326,6 +1338,9 @@ async function checkUser() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" placeholder="اسم الصنف (عربي)" value={newItem.name} onChange={(e) => setNewItem({...newItem, name: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} required />
                     <input type="text" placeholder="اسم الصنف (English)" value={newItem.name_en} onChange={(e) => setNewItem({...newItem, name_en: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                    <input type="text" placeholder="اسم الصنف (Français)" value={newItem.name_fr} onChange={(e) => setNewItem({...newItem, name_fr: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                    <input type="text" placeholder="اسم الصنف (Deutsch)" value={newItem.name_de} onChange={(e) => setNewItem({...newItem, name_de: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                    <input type="text" placeholder="اسم الصنف (Русский)" value={newItem.name_ru} onChange={(e) => setNewItem({...newItem, name_ru: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                     <input type="text" placeholder="اسم الصنف (日本語)" value={newItem.name_ja} onChange={(e) => setNewItem({...newItem, name_ja: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                     <input type="number" step="0.01" placeholder="السعر" value={newItem.price} onChange={(e) => setNewItem({...newItem, price: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} required />
                     <div className="flex flex-col gap-2">
@@ -1341,6 +1356,14 @@ async function checkUser() {
                       <option>حلويات</option>
                     </select>
                     <textarea placeholder="الوصف (عربي)" value={newItem.description} onChange={(e) => setNewItem({...newItem, description: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+
+                    <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                      <textarea placeholder="الوصف (English)" value={newItem.description_en} onChange={(e) => setNewItem({...newItem, description_en: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <textarea placeholder="الوصف (Français)" value={newItem.description_fr} onChange={(e) => setNewItem({...newItem, description_fr: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <textarea placeholder="الوصف (Deutsch)" value={newItem.description_de} onChange={(e) => setNewItem({...newItem, description_de: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <textarea placeholder="الوصف (Русский)" value={newItem.description_ru} onChange={(e) => setNewItem({...newItem, description_ru: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <textarea placeholder="الوصف (日本語)" value={newItem.description_ja} onChange={(e) => setNewItem({...newItem, description_ja: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                    </div>
                   </div>
 
                   {/* قسم الإضافات */}

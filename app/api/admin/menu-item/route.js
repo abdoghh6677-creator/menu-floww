@@ -19,11 +19,23 @@ export async function POST(req) {
 
     const body = await req.json()
     console.log('[DEBUG] API POST /api/admin/menu-item body:', JSON.stringify(body))
-    const { item, addons = [], variants = [] } = body
+    const { item = {}, addons = [], variants = [] } = body
+
+    // whitelist allowed item fields to avoid inserting unexpected columns
+    const allowedItemFields = [
+      'id','restaurant_id','name','name_en','name_fr','name_de','name_ru','name_ja',
+      'description','description_en','description_fr','description_de','description_ru','description_ja',
+      'price','category','image_url','has_promotion','promotion_discount','hide_when_available'
+    ]
+    const pick = (src, keys) => keys.reduce((acc, k) => { if (src && Object.prototype.hasOwnProperty.call(src, k)) acc[k] = src[k]; return acc }, {})
 
     // Generate UUID for new menu_item if not provided
     const itemId = item.id || randomUUID()
-    const itemWithId = { ...item, id: itemId }
+    const cleanItem = pick(item, allowedItemFields)
+    const itemWithId = { ...cleanItem, id: itemId }
+    // warn about unexpected keys
+    const extraKeys = Object.keys(item || {}).filter(k => !allowedItemFields.includes(k) && k !== 'id')
+    if (extraKeys.length > 0) console.warn('[WARN] Ignoring unexpected item fields:', extraKeys)
     console.log('[DEBUG] Creating menu_item with UUID:', itemId)
 
     const res = await supabaseAdmin.from('menu_items').insert([itemWithId]).select()
@@ -38,9 +50,11 @@ export async function POST(req) {
     // itemId already set above from randomUUID()
 
     if (addons && addons.length > 0) {
+      const allowedAddonFields = ['id','menu_item_id','name','name_en','name_fr','name_de','name_ru','name_ja','price']
       const addonsToInsert = addons.map(a => {
         const id = a.id && typeof a.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(a.id) ? a.id : randomUUID()
-        return ({ ...a, id, menu_item_id: itemId })
+        const clean = pick(a, allowedAddonFields)
+        return ({ ...clean, id, menu_item_id: itemId })
       })
       const { error: addonsError } = await supabaseAdmin.from('menu_addons').insert(addonsToInsert)
       if (addonsError) {
@@ -50,9 +64,11 @@ export async function POST(req) {
     }
 
     if (variants && variants.length > 0) {
+      const allowedVariantFields = ['id','menu_item_id','name','name_en','name_fr','name_de','name_ru','name_ja','price','is_default']
       const variantsToInsert = variants.map(v => {
         const id = v.id && typeof v.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(v.id) ? v.id : randomUUID()
-        return ({ ...v, id, menu_item_id: itemId })
+        const clean = pick(v, allowedVariantFields)
+        return ({ ...clean, id, menu_item_id: itemId })
       })
       const { error: variantsError } = await supabaseAdmin.from('item_variants').insert(variantsToInsert)
       if (variantsError) {
@@ -81,7 +97,7 @@ export async function PUT(req) {
 
     const body = await req.json()
     console.log(`[DEBUG] API PUT /api/admin/menu-item id=${id} (typeof: ${typeof id}) body:`, JSON.stringify(body))
-    const { item, addons = [], variants = [] } = body
+    const { item = {}, addons = [], variants = [] } = body
 
     console.log(`[DEBUG] API PUT: addons count: ${addons.length}, variants count: ${variants.length}`)
     console.log(`[DEBUG] API PUT: addons:`, JSON.stringify(addons))
@@ -126,7 +142,16 @@ export async function PUT(req) {
       }
     }
 
-    const upd = await supabaseAdmin.from('menu_items').update(item).eq('id', targetId)
+    // whitelist update fields
+    const allowedItemFields = [
+      'restaurant_id','name','name_en','name_fr','name_de','name_ru','name_ja',
+      'description','description_en','description_fr','description_de','description_ru','description_ja',
+      'price','category','image_url','has_promotion','promotion_discount','hide_when_available'
+    ]
+    const pick = (src, keys) => keys.reduce((acc, k) => { if (src && Object.prototype.hasOwnProperty.call(src, k)) acc[k] = src[k]; return acc }, {})
+    const itemPayload = pick(item, allowedItemFields)
+
+    const upd = await supabaseAdmin.from('menu_items').update(itemPayload).eq('id', targetId)
     if (upd.error) {
       console.error('[ERROR] Supabase update menu_items error:', upd.error)
       console.error('[ERROR] Full error object:', JSON.stringify(upd.error))
@@ -140,9 +165,11 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: delAddons.error }), { status: 500 })
     }
     if (addons && addons.length > 0) {
+      const allowedAddonFields = ['id','menu_item_id','name','name_en','name_fr','name_de','name_ru','name_ja','price']
       const addonsToInsert = addons.map(a => {
         const aid = a.id && typeof a.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(a.id) ? a.id : randomUUID()
-        return ({ ...a, id: aid, menu_item_id: targetId })
+        const clean = pick(a, allowedAddonFields)
+        return ({ ...clean, id: aid, menu_item_id: targetId })
       })
       const { error: addonsError } = await supabaseAdmin.from('menu_addons').insert(addonsToInsert)
       if (addonsError) {
@@ -158,9 +185,11 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: delVariants.error }), { status: 500 })
     }
     if (variants && variants.length > 0) {
+      const allowedVariantFields = ['id','menu_item_id','name','name_en','name_fr','name_de','name_ru','name_ja','price','is_default']
       const variantsToInsert = variants.map(v => {
         const vid = v.id && typeof v.id === 'string' && /^[0-9a-fA-F-]{36}$/.test(v.id) ? v.id : randomUUID()
-        return ({ ...v, id: vid, menu_item_id: targetId })
+        const clean = pick(v, allowedVariantFields)
+        return ({ ...clean, id: vid, menu_item_id: targetId })
       })
       const { error: variantsError } = await supabaseAdmin.from('item_variants').insert(variantsToInsert)
       if (variantsError) {
