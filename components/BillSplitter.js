@@ -1,21 +1,21 @@
 'use client'
 import { useState } from 'react'
 
-export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm }) {
+export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm, restaurantName = '', items = [] }) {
   const [participants, setParticipants] = useState([
-    { id: 1, name: '', phone: '', amount: 0, percentage: 100 }
+    { id: 1, name: '', phone: '', amount: 0, percentage: 100, selectedItems: [] }
   ])
-  const [splitMethod, setSplitMethod] = useState('equal') // equal, custom, percentage
+  const [splitMethod, setSplitMethod] = useState('equal') // equal, custom, percentage, itemBased
 
   const addParticipant = () => {
     const newId = participants.length + 1
     setParticipants([
       ...participants,
-      { id: newId, name: '', phone: '', amount: 0, percentage: 0 }
+      { id: newId, name: '', phone: '', amount: 0, percentage: 0, selectedItems: [] }
     ])
     
     if (splitMethod === 'equal') {
-      redistributeEqually([...participants, { id: newId, name: '', phone: '', amount: 0 }])
+      redistributeEqually([...participants, { id: newId, name: '', phone: '', amount: 0, percentage: 0, selectedItems: [] }])
     }
   }
 
@@ -50,6 +50,48 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
     setParticipants(updated)
   }
 
+  // إضافة/إزالة عناصر لشخص معين (تقسيم بناءً على العناصر المختارة)
+  const toggleItemForParticipant = (participantId, itemId) => {
+    const updated = participants.map(p => {
+      if (p.id === participantId) {
+        const itemIndex = p.selectedItems.findIndex(si => si.id === itemId)
+        if (itemIndex > -1) {
+          // إزالة العنصر
+          return {
+            ...p,
+            selectedItems: p.selectedItems.filter(si => si.id !== itemId)
+          }
+        } else {
+          // إضافة العنصر
+          const item = items.find(it => it.id === itemId)
+          return {
+            ...p,
+            selectedItems: [...p.selectedItems, { id: itemId, name: item?.name || '', price: item?.price || 0 }]
+          }
+        }
+      }
+      return p
+    })
+    setParticipants(updated)
+    
+    // إعادة حساب التقسيم بناءً على العناصر المختارة
+    if (splitMethod === 'itemBased') {
+      recalculateItemBasedSplit(updated)
+    }
+  }
+
+  const recalculateItemBasedSplit = (parts = participants) => {
+    const updated = parts.map(p => {
+      const itemsTotal = p.selectedItems.reduce((sum, item) => sum + (item.price || 0), 0)
+      return {
+        ...p,
+        amount: itemsTotal,
+        percentage: 0
+      }
+    })
+    setParticipants(updated)
+  }
+
   const updateAmount = (id, amount) => {
     const total = totalAmount + deliveryFee
     const updated = participants.map(p => {
@@ -78,6 +120,8 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
     setSplitMethod(method)
     if (method === 'equal') {
       redistributeEqually()
+    } else if (method === 'itemBased') {
+      recalculateItemBasedSplit()
     }
   }
 
@@ -109,11 +153,11 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
       {/* طريقة التقسيم */}
       <div>
         <label className="block font-medium mb-3">طريقة التقسيم:</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <button
             type="button"
             onClick={() => handleSplitMethodChange('equal')}
-            className={`py-3 rounded-lg font-semibold border-2 transition ${
+            className={`py-3 rounded-lg font-semibold border-2 transition text-sm ${
               splitMethod === 'equal'
                 ? 'bg-purple-600 text-white border-purple-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400'
@@ -124,7 +168,7 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
           <button
             type="button"
             onClick={() => handleSplitMethodChange('custom')}
-            className={`py-3 rounded-lg font-semibold border-2 transition ${
+            className={`py-3 rounded-lg font-semibold border-2 transition text-sm ${
               splitMethod === 'custom'
                 ? 'bg-purple-600 text-white border-purple-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400'
@@ -135,7 +179,7 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
           <button
             type="button"
             onClick={() => handleSplitMethodChange('percentage')}
-            className={`py-3 rounded-lg font-semibold border-2 transition ${
+            className={`py-3 rounded-lg font-semibold border-2 transition text-sm ${
               splitMethod === 'percentage'
                 ? 'bg-purple-600 text-white border-purple-600'
                 : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400'
@@ -143,8 +187,37 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
           >
             نسبة مئوية %
           </button>
+          <button
+            type="button"
+            onClick={() => handleSplitMethodChange('itemBased')}
+            className={`py-3 rounded-lg font-semibold border-2 transition text-sm ${
+              splitMethod === 'itemBased'
+                ? 'bg-purple-600 text-white border-purple-600'
+                : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400'
+            }`}
+          >
+            حسب الطلبات 🍽️
+          </button>
         </div>
       </div>
+
+      {/* عرض العناصر المتاحة عند اختيار "حسب الطلبات" */}
+      {splitMethod === 'itemBased' && items.length > 0 && (
+        <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+          <h4 className="font-bold mb-3">📋 العناصر المتاحة:</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+            {items.map(item => (
+              <div key={item.id} className="flex items-center p-2 bg-white rounded-lg border border-blue-100">
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{item.name}</p>
+                  <p className="text-blue-600 text-xs">{item.price?.toFixed(2)} ج</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-600 mt-2">💡 اختر العناصر لكل شخص أدناه</p>
+        </div>
+      )}
 
       {/* المشاركون */}
       <div className="space-y-3">
@@ -198,6 +271,28 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
                 />
               </div>
 
+              {splitMethod === 'itemBased' && items.length > 0 && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2">اختر العناصر:</label>
+                  <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto border-2 border-gray-300 rounded-lg p-2 bg-white">
+                    {items.map(item => (
+                      <label key={item.id} className="flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={participant.selectedItems.some(si => si.id === item.id)}
+                          onChange={() => toggleItemForParticipant(participant.id, item.id)}
+                          className="ml-2"
+                        />
+                        <div className="text-xs flex-1">
+                          <p className="font-medium">{item.name?.substring(0, 15)}...</p>
+                          <p className="text-green-600">{item.price?.toFixed(2)} ج</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {splitMethod === 'custom' && (
                 <div>
                   <label className="block text-sm font-medium mb-1">المبلغ (ج)</label>
@@ -228,11 +323,16 @@ export default function BillSplitter({ totalAmount, deliveryFee, onSplitConfirm 
               )}
 
               <div className="bg-purple-100 rounded-lg p-3 flex items-center justify-center">
-                <div className="text-center">
+                <div className="text-center w-full">
                   <p className="text-xs text-gray-600">نصيبه</p>
                   <p className="text-xl font-bold text-purple-700">
                     {participant.amount.toFixed(2)} ج
                   </p>
+                  {splitMethod === 'itemBased' && participant.selectedItems.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      ({participant.selectedItems.length} عناصر)
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
