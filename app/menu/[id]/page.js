@@ -36,7 +36,7 @@ const translations = {
     paymentNote: '* الدفع الإلكتروني قريباً',
     confirm: 'تأكيد الطلب ✅',
     add: '+ إضافة إلى الطلب',
-    addons: 'اختر الإضافات (اختياري):',
+    addons: 'اختر الإضافات:',
     sizes: 'اختر الحجم:',
     cancel: 'إلغاء',
     addBtn: 'إضافة',
