@@ -2339,7 +2339,13 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
                   <span className="font-semibold text-sm sm:text-base">{t.sizes}</span>
                   <div className="flex gap-2 flex-wrap mt-2">
                     {item.item_variants && item.item_variants.length > 0 ? item.item_variants.map(variant => {
-                      const variantName = language === 'en' && variant.name_en ? variant.name_en : language === 'ja' && variant.name_ja ? variant.name_ja : language === 'fr' && variant.name_fr ? variant.name_fr : language === 'de' && variant.name_de ? variant.name_de : language === 'ru' && variant.name_ru ? variant.name_ru : variant.name
+                      // عرض النص المترجم حسب اللغة
+                      const variantName = language === 'en' && variant.name_en ? variant.name_en 
+                        : language === 'fr' && variant.name_fr ? variant.name_fr 
+                        : language === 'de' && variant.name_de ? variant.name_de 
+                        : language === 'ru' && variant.name_ru ? variant.name_ru 
+                        : language === 'ja' && variant.name_ja ? variant.name_ja 
+                        : variant.name
                       return (
                         <button
                           key={variant.id}
@@ -2356,10 +2362,16 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
 
                 {item.menu_addons && item.menu_addons.length > 0 && (
                   <div className="mt-3 border-t pt-3">
-                    <p className="text-sm font-semibold mb-2">{t.addons}</p>
+                    <p className="text-sm font-semibold mb-2">{item.addons_header ? item.addons_header : t.addons}</p>
                     <div className="space-y-2">
                       {item.menu_addons.map(addon => {
-                        const addonName = language === 'en' && addon.name_en ? addon.name_en : language === 'ja' && addon.name_ja ? addon.name_ja : language === 'fr' && addon.name_fr ? addon.name_fr : language === 'de' && addon.name_de ? addon.name_de : language === 'ru' && addon.name_ru ? addon.name_ru : addon.name
+                        // عرض النص المترجم حسب اللغة
+                        const addonName = language === 'en' && addon.name_en ? addon.name_en 
+                          : language === 'fr' && addon.name_fr ? addon.name_fr 
+                          : language === 'de' && addon.name_de ? addon.name_de 
+                          : language === 'ru' && addon.name_ru ? addon.name_ru 
+                          : language === 'ja' && addon.name_ja ? addon.name_ja 
+                          : addon.name
                         return (
                           <label key={addon.id} onClick={(e) => e.stopPropagation()} className="flex items-center justify-between p-2 rounded-lg border cursor-pointer">
                             <div className="flex items-center gap-2">

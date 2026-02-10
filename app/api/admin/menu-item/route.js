@@ -25,6 +25,7 @@ export async function POST(req) {
     const allowedItemFields = [
       'id','restaurant_id','name','name_en','name_fr','name_de','name_ru','name_ja',
       'description','description_en','description_fr','description_de','description_ru','description_ja',
+      'addons_header',
       'price','category','image_url','has_promotion','promotion_discount','hide_when_available'
     ]
     const pick = (src, keys) => keys.reduce((acc, k) => { if (src && Object.prototype.hasOwnProperty.call(src, k)) acc[k] = src[k]; return acc }, {})
@@ -146,6 +147,7 @@ export async function PUT(req) {
     const allowedItemFields = [
       'restaurant_id','name','name_en','name_fr','name_de','name_ru','name_ja',
       'description','description_en','description_fr','description_de','description_ru','description_ja',
+      'addons_header',
       'price','category','image_url','has_promotion','promotion_discount','hide_when_available'
     ]
     const pick = (src, keys) => keys.reduce((acc, k) => { if (src && Object.prototype.hasOwnProperty.call(src, k)) acc[k] = src[k]; return acc }, {})

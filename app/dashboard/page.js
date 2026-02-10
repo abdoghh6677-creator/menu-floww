@@ -195,6 +195,7 @@ export default function Dashboard() {
     description_fr: '',
     description_de: '',
     description_ru: '',
+    addons_header: '',
     price: '',
     category: 'مشروبات',
     image_url: '',
@@ -203,10 +204,11 @@ export default function Dashboard() {
     hide_when_available: false
   })
 
+
   const [addons, setAddons] = useState([])
-  const [newAddon, setNewAddon] = useState({ name: '', price: '' })
+  const [newAddon, setNewAddon] = useState({ name: '', name_en: '', name_fr: '', name_de: '', name_ru: '', name_ja: '', price: '' })
   const [variants, setVariants] = useState([])
-  const [newVariant, setNewVariant] = useState({ name: '', price: '' })
+  const [newVariant, setNewVariant] = useState({ name: '', name_en: '', name_fr: '', name_de: '', name_ru: '', name_ja: '', price: '' })
 
   const router = useRouter()
 
@@ -680,6 +682,17 @@ async function checkUser() {
       }
     }, [restaurant?.id, lastCheckedOrderId])
 
+  // Helper: لا حاجة للترجمة التلقائية - نحفظ ما أدخله المستخدم مباشرة
+  const startTranslatingAddons = async (itemId, addons) => {
+    // لا شيء - تم حفظ كل البيانات مباشرة من المستخدم
+    console.log('[INFO] Addons saved with user-provided translations')
+  }
+
+  const startTranslatingVariants = async (itemId, variants) => {
+    // لا شيء - تم حفظ كل البيانات مباشرة من المستخدم
+    console.log('[INFO] Variants saved with user-provided translations')
+  }
+
   const handleAddItem = async (e) => {
     e.preventDefault()
     
@@ -712,12 +725,13 @@ async function checkUser() {
       finalVariants.push({ ...newVariant })
     }
 
-    // ترجمة الوصف تلقائياً
+    // ترجمة الوصف فقط قبل الحفظ
     const translations = await translateText(newItem.description)
 
     // prepare payload — map translation keys to proper column names
     const payload = {
       ...newItem,
+      addons_header: newItem.addons_header,
       name_en: newItem.name_en || translations.en,
       name_fr: newItem.name_fr || translations.fr,
       name_de: newItem.name_de || translations.de,
@@ -747,10 +761,16 @@ async function checkUser() {
         return
       }
 
-      // success
+      // success - حفظ الأساسيات بنجاح
       resetForm()
       loadMenuItems(restaurant.id)
       alert('تم إضافة الصنف مع الأحجام والإضافات بنجاح!')
+      
+      // ترجمة الإضافات والأحجام في الخلفية (fire and forget)
+      if (body.data && body.data.id) {
+        startTranslatingAddons(body.data.id, finalAddons)
+        startTranslatingVariants(body.data.id, finalVariants)
+      }
     } catch (e) {
       console.error('Network/server error creating item:', e)
       alert('حدث خطأ أثناء إضافة الصنف: ' + (e.message || String(e)))
@@ -783,11 +803,12 @@ async function checkUser() {
       finalVariants.push({ ...newVariant })
     }
 
-    // ترجمة الوصف تلقائياً إذا تم تعديله
+    // ترجمة الوصف فقط قبل الحفظ
     const translations = await translateText(newItem.description)
 
     // build update payload and retry without promotion fields if needed
     const updatePayload = {
+      addons_header: newItem.addons_header,
       name: newItem.name,
       name_en: newItem.name_en,
       name_fr: newItem.name_fr,
@@ -823,8 +844,13 @@ async function checkUser() {
         return
       }
 
+      // success - تحديث الأساسيات بنجاح
       resetForm()
       loadMenuItems(restaurant.id)
+      
+      // ترجمة الإضافات والأحجام في الخلفية (fire and forget)
+      startTranslatingAddons(editingItem.id, finalAddons)
+      startTranslatingVariants(editingItem.id, finalVariants)
     } catch (e) {
       console.error('Network/server error updating item:', e)
       alert('حدث خطأ أثناء تحديث الصنف: ' + (e.message || String(e)))
@@ -846,6 +872,7 @@ async function checkUser() {
       description_fr: item.description_fr || '',
       description_de: item.description_de || '',
       description_ru: item.description_ru || '',
+      addons_header: item.addons_header || '',
       price: item.price,
       category: item.category,
       image_url: item.image_url || '',
@@ -891,6 +918,7 @@ async function checkUser() {
       description_fr: '',
       description_de: '',
       description_ru: '',
+      addons_header: '',
       description_ja: '',
       price: '',
       category: 'مشروبات',
@@ -900,9 +928,9 @@ async function checkUser() {
       hide_when_available: false
     })
     setAddons([])
-    setNewAddon({ name: '', price: '' })
+    setNewAddon({ name: '', name_en: '', name_fr: '', name_de: '', name_ru: '', name_ja: '', price: '' })
     setVariants([])
-    setNewVariant({ name: '', price: '' })
+    setNewVariant({ name: '', name_en: '', name_fr: '', name_de: '', name_ru: '', name_ja: '', price: '' })
     setEditingItem(null)
     setShowAddForm(false)
   }
@@ -917,7 +945,7 @@ async function checkUser() {
   const addAddonToList = () => {
     if (newAddon.name && newAddon.price !== '') {
       setAddons([...addons, { ...newAddon, id: uuidv4() }])
-      setNewAddon({ name: '', price: '' })
+      setNewAddon({ name: '', name_en: '', name_fr: '', name_de: '', name_ru: '', name_ja: '', price: '' })
     }
   }
 
@@ -932,7 +960,7 @@ async function checkUser() {
         id: uuidv4(),
         is_default: variants.length === 0 
       }])
-      setNewVariant({ name: '', price: '' })
+      setNewVariant({ name: '', name_en: '', name_fr: '', name_de: '', name_ru: '', name_ja: '', price: '' })
     }
   }
 
@@ -1368,12 +1396,21 @@ async function checkUser() {
 
                   {/* قسم الإضافات */}
                   <div className="border-t pt-4 mt-4">
-                    <h4 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>الإضافات (اختياري)</h4>
+                    <h4 className={`font-bold mb-2 ${darkMode ? 'text-white' : 'text-black'}`}>الإضافات</h4>
                     <p className="text-sm text-gray-500 mb-2">ضع السعر 0 لتكون الإضافة مجانية</p>
+                    <input type="text" placeholder="نص رأس الإضافات (مثال: اختر الإضافات)" value={newItem.addons_header} onChange={(e) => setNewItem({...newItem, addons_header: e.target.value})} className={`w-full mb-2 px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                     <div className="flex gap-2 mb-2">
                       <input type="text" placeholder="اسم الإضافة (مثال: جبنة زيادة)" value={newAddon.name} onChange={(e) => setNewAddon({...newAddon, name: e.target.value})} className={`flex-1 px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                       <input type="number" placeholder="السعر (0 = مجاني)" value={newAddon.price} onChange={(e) => setNewAddon({...newAddon, price: e.target.value})} className={`w-32 px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                       <button type="button" onClick={addAddonToList} className="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">إضافة</button>
+                    </div>
+                    {/* Multilingual addon names */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <input type="text" placeholder="English" value={newAddon.name_en} onChange={(e) => setNewAddon({...newAddon, name_en: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="Français" value={newAddon.name_fr} onChange={(e) => setNewAddon({...newAddon, name_fr: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="Deutsch" value={newAddon.name_de} onChange={(e) => setNewAddon({...newAddon, name_de: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="Русский" value={newAddon.name_ru} onChange={(e) => setNewAddon({...newAddon, name_ru: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="日本語" value={newAddon.name_ja} onChange={(e) => setNewAddon({...newAddon, name_ja: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                     </div>
                     <div className="space-y-2">
                       {addons.map(addon => (
@@ -1411,6 +1448,14 @@ async function checkUser() {
                       >
                         إضافة
                       </button>
+                    </div>
+                    {/* Multilingual variant names */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <input type="text" placeholder="English" value={newVariant.name_en} onChange={(e) => setNewVariant({...newVariant, name_en: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="Français" value={newVariant.name_fr} onChange={(e) => setNewVariant({...newVariant, name_fr: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="Deutsch" value={newVariant.name_de} onChange={(e) => setNewVariant({...newVariant, name_de: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="Русский" value={newVariant.name_ru} onChange={(e) => setNewVariant({...newVariant, name_ru: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input type="text" placeholder="日本語" value={newVariant.name_ja} onChange={(e) => setNewVariant({...newVariant, name_ja: e.target.value})} className={`px-4 py-2 border rounded-xl outline-none transition ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                     </div>
 
                     {variants.length > 0 && (
