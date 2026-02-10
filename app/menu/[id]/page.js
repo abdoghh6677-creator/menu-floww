@@ -2396,9 +2396,9 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
                 )}
 
                 <div className="mt-4 flex items-center gap-3">
-                  <button onClick={() => { handleRemoveOne() }} className="ctrl-btn ctrl-btn-dark">-</button>
-                  <div className="font-bold">{quantity}</div>
-                  <button onClick={() => handleAddToCart()} className="add-btn">+ {t.addBtn || t.add}</button>
+                  <button onClick={() => { handleRemoveOne() }} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition">−</button>
+                  <div className="font-bold text-lg">{quantity}</div>
+                  <button onClick={() => handleAddToCart()} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition">+</button>
                 </div>
                 <div className="mt-4">
                   <button onClick={() => setOpen(false)} className="ghost-btn prominent">{t.continueShopping}</button>
