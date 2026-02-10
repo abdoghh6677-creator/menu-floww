@@ -1327,6 +1327,11 @@ export default function MenuPage({ params }) {
 
       setOrderSuccess(true)
       setShowCheckout(false)
+      setShowCart(false)
+      setShowAddedNotification(false)
+      setShowBillSplit(false)
+      setShowPromotion(false)
+      setShowLangList(false)
 
       // رسالة مخصصة حسب طريقة الدفع
       if (paymentMethod === 'instapay') {
@@ -1401,6 +1406,10 @@ export default function MenuPage({ params }) {
       console.log('📊 Current restaurant state:', restaurant)
       setCheckoutLoading(true)
       setShowCart(false)
+      setShowAddedNotification(false)
+      setShowBillSplit(false)
+      setShowPromotion(false)
+      setShowLangList(false)
 
       // Force disable any caching on this query
       const { data: fresh, error } = await supabase
