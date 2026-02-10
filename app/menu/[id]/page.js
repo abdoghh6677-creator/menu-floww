@@ -2156,8 +2156,8 @@ export default function MenuPage({ params }) {
         </div>
       )}
 
-      {/* Added Notification */}
-      {showAddedNotification && (
+      {/* Added Notification - تختفي عند فتح صفحة الدفع */}
+      {showAddedNotification && !showCheckout && (
         <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center justify-between gap-4 border transition-colors duration-300 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
           <div className="flex items-center gap-3">
             <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">✓</div>
