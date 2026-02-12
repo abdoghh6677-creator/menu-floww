@@ -25,14 +25,14 @@ const translations = {
     name: 'الاسم *',
     phone: 'رقم الهاتف *',
     type: 'نوع الطلب *',
-    dineIn: '🍽️ داخل المطعم',
-    deliveryType: '🚗 توصيل',
+    dineIn: 'داخل المطعم',
+    deliveryType: 'توصيل',
     table: 'رقم الطاولة *',
     address: 'العنوان التفصيلي *',
     notes: 'ملاحظات (اختياري)',
     notesPh: 'أي طلبات خاصة...',
     summary: 'ملخص الطلب:',
-    payment: '💰 الدفع: الدفع عند الاستلام',
+    payment: 'الدفع: الدفع عند الاستلام',
     confirm: 'تأكيد الطلب ✅',
     add: '+ إضافة إلى الطلب',
     addons: 'اختر الإضافات:',
@@ -53,19 +53,19 @@ const translations = {
     alertLoc: 'يرجى إدخال العنوان التفصيلي',
     alertErr: 'حدث خطأ، يرجى المحاولة مرة أخرى',
     currency: 'ج.م',
-    cartReady: 'الطلب جاهز في السلة 🛒',
+    cartReady: 'الطلب جاهز في السلة',
     continueShopping: 'متابعة التسوق',
-    pickup: '🏪 استلام',
+    pickup: 'استلام',
     promotions: '🔥 العروضات',
     validUntil: 'صالح حتى',
     endsIn: '⏳ ينتهي في',
-    deliveryOnly: 'توصيل فقط 🛵',
-    dineInOnly: 'داخل المطعم فقط 🍽️',
-    search: '🔍 ابحث عن الأصناف...',
+    deliveryOnly: 'توصيل فقط',
+    dineInOnly: 'داخل المطعم فقط',
+    search: 'ابحث عن الأصناف...',
     paymentMethod: 'طريقة الدفع',
-    cash: '💵 الدفع عند الاستلام',
-    instapay: '📱 InstaPay',
-    visa: '💳 Visa / Mastercard (عند الاستلام)',
+    cash: 'الدفع عند الاستلام',
+    instapay: 'InstaPay',
+    visa: 'Visa / Mastercard (عند الاستلام)',
     transferTo: 'يرجى التحويل إلى:',
     uploadReceipt: 'سيتم تأكيد الطلب بعد التحويل',
     rateOrder: '⭐ قيّم الطلب السابق',
@@ -100,14 +100,14 @@ const translations = {
     name: 'Name *',
     phone: 'Phone *',
     type: 'Order Type *',
-    dineIn: '🍽️ Dine-in',
-    deliveryType: '🚗 Delivery',
+    dineIn: 'Dine-in',
+    deliveryType: 'Delivery',
     table: 'Table Number *',
     address: 'Detailed Address *',
     notes: 'Notes (Optional)',
     notesPh: 'Any special requests...',
     summary: 'Order Summary:',
-    payment: '💰 Payment: Cash on Delivery',
+    payment: 'Payment: Cash on Delivery',
     confirm: 'Confirm Order ✅',
     add: '+ Add to Order',
     addons: 'Choose Add-ons (Optional):',
@@ -128,19 +128,19 @@ const translations = {
     alertLoc: 'Please enter detailed address',
     alertErr: 'An error occurred, try again',
     currency: 'LE',
-    cartReady: 'Your order is ready in cart 🛒',
+    cartReady: 'Your order is ready in cart',
     continueShopping: 'Continue Shopping',
-    pickup: '🏪 Pickup',
-    promotions: '🔥 Promotions',
+    pickup: 'Pickup',
+    promotions: 'Promotions',
     validUntil: 'Valid until',
-    endsIn: '⏳ Ends in',
-    deliveryOnly: 'Delivery Only 🛵',
-    dineInOnly: 'Dine-in Only 🍽️',
-    search: '🔍 Search items...',
+    endsIn: 'Ends in',
+    deliveryOnly: 'Delivery Only',
+    dineInOnly: 'Dine-in Only',
+    search: 'Search items...',
     paymentMethod: 'Payment Method',
-    cash: '💵 Cash on Delivery',
-    instapay: '📱 InstaPay',
-    visa: '💳 Visa / Mastercard (on Delivery)',
+    cash: 'Cash on Delivery',
+    instapay: 'InstaPay',
+    visa: 'Visa / Mastercard (on Delivery)',
     transferTo: 'Please transfer to:',
     uploadReceipt: 'Order will be confirmed after transfer',
     rateOrder: '⭐ Rate Previous Order',
@@ -1881,7 +1881,7 @@ export default function MenuPage({ params }) {
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'dine-in' })}
                     className={`p-2 rounded border text-sm transition-colors ${customerInfo.orderType === 'dine-in' ? 'bg-orange-100 border-orange-500 text-orange-700' : (darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50')}`}
                   >
-                    {t.dineIn}
+                    <span className="flex items-center gap-2"><Icon name="dineIn" size={18} />{t.dineIn}</span>
                   </button>
                 )}
                 {(checkoutRestaurant || restaurant)?.accepts_delivery && (
@@ -1890,7 +1890,7 @@ export default function MenuPage({ params }) {
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'delivery' })}
                     className={`p-2 rounded border text-sm transition-colors ${customerInfo.orderType === 'delivery' ? 'bg-orange-100 border-orange-500 text-orange-700' : (darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50')}`}
                   >
-                    {t.deliveryType}
+                    <span className="flex items-center gap-2"><Icon name="delivery" size={18} />{t.deliveryType}</span>
                   </button>
                 )}
                 {(checkoutRestaurant || restaurant)?.accepts_pickup !== false && (
@@ -1899,7 +1899,7 @@ export default function MenuPage({ params }) {
                     onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'pickup' })}
                     className={`p-2 rounded border text-sm transition-colors ${customerInfo.orderType === 'pickup' ? 'bg-orange-100 border-orange-500 text-orange-700' : (darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50')}`}
                   >
-                    {t.pickup}
+                    <span className="flex items-center gap-2"><Icon name="pickup" size={18} />{t.pickup}</span>
                   </button>
                 )}
               </div>
@@ -1953,9 +1953,10 @@ export default function MenuPage({ params }) {
                   <button
                     type="button"
                     onClick={() => setShowCouponInput(true)}
-                    className="text-orange-600 font-bold text-sm hover:underline flex items-center gap-1"
+                    className="text-orange-600 font-bold text-sm hover:underline flex items-center gap-2"
                   >
-                    <span>🏷️</span> {t.haveCoupon}
+                    <Icon name="tag" size={16} />
+                    {t.haveCoupon}
                   </button>
                 ) : (
                   <div className="space-y-2">
@@ -2012,7 +2013,7 @@ export default function MenuPage({ params }) {
                         : 'border-gray-300 hover:border-green-400'
                     }`}
                   >
-                    <span className="text-2xl">💵</span>
+                    <Icon name="cash" size={20} />
                     <span>{t.cash}</span>
                   </button>
                   )}
@@ -2027,7 +2028,7 @@ export default function MenuPage({ params }) {
                           : 'border-gray-300 hover:border-purple-400'
                       }`}
                     >
-                      <span className="text-2xl">💳</span>
+                      <Icon name="card" size={20} />
                       <span>{t.instapay}</span>
                     </button>
                   )}
@@ -2042,7 +2043,7 @@ export default function MenuPage({ params }) {
                           : 'border-gray-300 hover:border-blue-400'
                       }`}
                     >
-                      <span className="text-2xl">💳</span>
+                      <Icon name="card" size={20} />
                       <span>{t.visa}</span>
                     </button>
                   )}
@@ -2143,7 +2144,7 @@ export default function MenuPage({ params }) {
                 className="w-full text-white py-3 rounded-lg font-bold text-lg flex items-center justify-center gap-2 mt-3"
                 style={{ background: '#25D366', borderRadius: UI_THEME.radii.mainBtn }}
               >
-                <span>📱</span>
+                <Icon name="whatsapp" size={18} />
                 {language === 'ar' ? 'تواصل عبر WhatsApp' : (language === 'en' ? 'Contact via WhatsApp' : (language === 'fr' ? 'Contacter via WhatsApp' : (language === 'de' ? 'Kontakt per WhatsApp' : (language === 'ru' ? 'Связаться через WhatsApp' : 'WhatsAppで連絡'))))}
               </a>
             )}
@@ -2473,4 +2474,64 @@ const UI_THEME = {
     mainBtn: '12px'
   },
   shadow: '0 1px 3px rgba(0,0,0,0.08)'
+}
+
+// Simple inline SVG icon set (professional-looking, lightweight)
+function Icon({ name, className = 'inline-block', size = 20 }) {
+  const common = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', xmlns: 'http://www.w3.org/2000/svg' }
+  switch (name) {
+    case 'dineIn':
+      return (
+        <svg {...common} className={className}>
+          <path d="M7 3v11" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M17 3v11" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M3 14c0 2.8 2 4 5 4s5-1.2 5-4" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    case 'delivery':
+      return (
+        <svg {...common} className={className}>
+          <path d="M3 6h11v7h4l3 3V6" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="7.5" cy="18.5" r="1.5" fill={UI_THEME.primary}/>
+          <circle cx="18.5" cy="18.5" r="1.5" fill={UI_THEME.primary}/>
+        </svg>
+      )
+    case 'pickup':
+      return (
+        <svg {...common} className={className}>
+          <path d="M5 11h14v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6z" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    case 'whatsapp':
+      return (
+        <svg {...common} className={className}>
+          <path d="M21 11.5A9.5 9.5 0 1 0 11.5 21L7 22l1.1-4.5A9.5 9.5 0 0 0 21 11.5z" fill="#25D366"/>
+          <path d="M15.5 14.2c-.3 0-1 .1-1.9-.4-.4-.2-1.2-.6-2-.9-.6-.2-1-.3-1.4.3-.4.6-.9.9-1.6.8-.6-.1-1.3-.8-2-1.6-.6-.8-.2-1.3.4-1.9.4-.4.8-.9.9-1.3.1-.4 0-.9-.1-1.4-.1-.5-.5-.8-1-1.1-.4-.2-1-.4-1.5-.6-.5-.1-1-.2-1.3-.2-.2 0-.4 0-.6.1" stroke="#fff" strokeWidth="0.9" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )
+    case 'cash':
+      return (
+        <svg {...common} className={className}>
+          <rect x="2" y="6" width="20" height="12" rx="2" stroke={UI_THEME.primary} strokeWidth="1.6" fill="none"/>
+          <path d="M7 12h10" stroke={UI_THEME.primary} strokeWidth="1.6" strokeLinecap="round"/>
+        </svg>
+      )
+    case 'card':
+      return (
+        <svg {...common} className={className}>
+          <rect x="2" y="6" width="20" height="12" rx="2" stroke={UI_THEME.primary} strokeWidth="1.6" fill="none"/>
+          <rect x="6" y="10" width="4" height="2" fill={UI_THEME.primary} />
+        </svg>
+      )
+    case 'tag':
+      return (
+        <svg {...common} className={className}>
+          <path d="M2 12l8 8 10-10-8-8L2 12z" stroke={UI_THEME.primary} strokeWidth="1.4" fill="none" />
+          <circle cx="8" cy="8" r="1" fill={UI_THEME.primary} />
+        </svg>
+      )
+    default:
+      return null
+  }
 }
