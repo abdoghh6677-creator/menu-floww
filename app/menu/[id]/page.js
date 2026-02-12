@@ -1476,7 +1476,7 @@ export default function MenuPage({ params }) {
   }
 
   return (
-    <div className={`min-h-screen pb-32 font-sans transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`min-h-screen pb-32 transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-gray-100' : ''}`} style={{ backgroundColor: darkMode ? undefined : UI_THEME.pageBg, fontFamily: UI_THEME.fontFamily, color: UI_THEME.text }}>
       {/* Promotions Alert Modal - showing items with discounts */}
       {showPromoAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -1840,7 +1840,7 @@ export default function MenuPage({ params }) {
       {/* Checkout Modal Placeholder */}
       {showCheckout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
-          <div className={`w-full max-w-md rounded-lg p-3 sm:p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[95vh] sm:max-h-[90vh] overflow-y-auto`}>
+          <div className="w-full max-w-md overflow-y-auto" style={{ background: UI_THEME.cardBg, borderRadius: UI_THEME.radii.card, padding: 24, boxShadow: UI_THEME.shadow, color: UI_THEME.text, maxHeight: '95vh' }}>
             <h3 className="text-xl font-bold mb-4">{t.checkout}</h3>
             {checkoutLoading && (
               <div className="text-center py-4">
@@ -1853,7 +1853,8 @@ export default function MenuPage({ params }) {
                 type="text" 
                 placeholder={t.name} 
                 required 
-                className={`w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'}`}
+                className={`w-full`}
+                style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
                 value={customerInfo.name}
                 onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})}
               />
@@ -1861,7 +1862,8 @@ export default function MenuPage({ params }) {
                 type="tel" 
                 placeholder={t.phone} 
                 required 
-                className={`w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'}`}
+                className={`w-full`}
+                style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
                 value={customerInfo.phone}
                 onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})}
               />
@@ -1908,7 +1910,8 @@ export default function MenuPage({ params }) {
                   type="text"
                   placeholder={t.table}
                   required
-                  className={`w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'}`}
+                  className={`w-full`}
+                  style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
                   value={customerInfo.tableNumber}
                   onChange={e => setCustomerInfo({ ...customerInfo, tableNumber: e.target.value })}
                 />
@@ -1920,7 +1923,8 @@ export default function MenuPage({ params }) {
                   <textarea
                     placeholder={t.addressExample}
                     required
-                    className={`w-full p-3 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500 resize-none ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-black placeholder-gray-500'}`}
+                    className={`w-full`}
+                    style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
                     rows="4"
                     value={customerInfo.deliveryAddress || ''}
                     onChange={e => setCustomerInfo({ ...customerInfo, deliveryAddress: e.target.value })}
@@ -1978,12 +1982,13 @@ export default function MenuPage({ params }) {
                           placeholder={t.couponCode}
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
-                          className={`flex-1 p-2 border rounded text-sm ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'}`}
+                          className={`flex-1`}
+                          style={{ padding: 12, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
                         />
                         <button
                           type="button"
                           onClick={handleApplyCoupon}
-                          className="bg-gray-800 text-white px-4 py-2 rounded text-sm font-bold hover:bg-gray-700"
+                          style={{ background: UI_THEME.applyBtn, color: '#fff', padding: '10px 14px', borderRadius: UI_THEME.radii.smallBtn, fontWeight: 600 }}
                         >
                           {t.apply}
                         </button>
@@ -2110,15 +2115,10 @@ export default function MenuPage({ params }) {
 
               <button
                 type="submit"
-                className={`w-full py-4 rounded-lg font-bold text-lg text-white ${
-                  paymentMethod === 'instapay'
-                    ? 'bg-purple-600 hover:bg-purple-700'
-                    : 'bg-green-600 hover:bg-green-700'
-                }`}
+                className={`w-full py-4 rounded-lg font-bold text-lg text-white`}
+                style={{ background: UI_THEME.applyBtn, borderRadius: UI_THEME.radii.mainBtn }}
               >
-                {paymentMethod === 'instapay'
-                  ? `💳 ${t.confirm}`
-                  : t.confirm}
+                {paymentMethod === 'instapay' ? `💳 ${t.confirm}` : t.confirm}
               </button>
               <button type="button" onClick={() => setShowCheckout(false)} className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg">{t.cancel}</button>
             </form>
@@ -2130,17 +2130,18 @@ export default function MenuPage({ params }) {
       {/* Success Modal */}
       {orderSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-8 text-center max-w-sm w-full">
+          <div className="w-full max-w-sm text-center" style={{ background: UI_THEME.cardBg, borderRadius: UI_THEME.radii.card, padding: 24, boxShadow: UI_THEME.shadow, color: UI_THEME.text }}>
             <div className="text-4xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold mb-2 text-black">{t.success}</h3>
-            <button onClick={() => setOrderSuccess(false)} className="w-full bg-orange-600 text-white py-2 rounded-lg mt-4">{t.ok}</button>
-            
+            <h3 className="text-2xl font-bold mb-2" style={{ color: UI_THEME.text }}>{t.success}</h3>
+            <button onClick={() => setOrderSuccess(false)} className="w-full text-white py-2 mt-4" style={{ background: UI_THEME.primary, borderRadius: UI_THEME.radii.mainBtn, padding: '10px 12px', fontWeight: 600 }}>{t.ok}</button>
+
             {restaurant?.whatsapp_number && (
               <a
                 href={`https://wa.me/${restaurant.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، أنا ${customerInfo.name}\nأود الاستفسار عن طلبي`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-green-700 flex items-center justify-center gap-2 mt-3"
+                className="w-full text-white py-3 rounded-lg font-bold text-lg flex items-center justify-center gap-2 mt-3"
+                style={{ background: '#25D366', borderRadius: UI_THEME.radii.mainBtn }}
               >
                 <span>📱</span>
                 {language === 'ar' ? 'تواصل عبر WhatsApp' : (language === 'en' ? 'Contact via WhatsApp' : (language === 'fr' ? 'Contacter via WhatsApp' : (language === 'de' ? 'Kontakt per WhatsApp' : (language === 'ru' ? 'Связаться через WhatsApp' : 'WhatsAppで連絡'))))}
@@ -2451,4 +2452,25 @@ function CountdownTimer({ targetDate, t, darkMode }) {
       </span>
     </div>
   )
+}
+
+// UI Theme variables (applied to Checkout/Success UI)
+const UI_THEME = {
+  pageBg: '#E8E8E8',
+  cardBg: '#FFFFFF',
+  headerBg: '#2D2D2D',
+  primary: '#8B1A1A',
+  applyBtn: '#991B1B',
+  text: '#000000',
+  placeholder: '#6B7280',
+  star: '#DC2626',
+  inputBorder: '#D1D5DB',
+  fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  radii: {
+    card: '18px',
+    input: '12px',
+    smallBtn: '8px',
+    mainBtn: '12px'
+  },
+  shadow: '0 1px 3px rgba(0,0,0,0.08)'
 }
