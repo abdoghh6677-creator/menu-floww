@@ -271,6 +271,12 @@ export default function Dashboard() {
 
 async function checkUser() {
   console.log('👤 Checking user...')
+  if (!supabase) {
+    console.error('❌ Supabase client is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+    setLoading(false)
+    return
+  }
+
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   
   if (authError || !user || !user.email) {
@@ -1060,6 +1066,21 @@ async function checkUser() {
     )
   }
 
+  if (!supabase) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-2xl text-center bg-white/90 p-8 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold mb-4">إعداد Supabase مفقود</h2>
+          <p className="mb-4">لم يتم تكوين عميل Supabase لأن المتغيرات البيئية `NEXT_PUBLIC_SUPABASE_URL` أو `NEXT_PUBLIC_SUPABASE_ANON_KEY` غير موجودة.</p>
+          <p className="text-sm text-gray-600 mb-6">أضف المتغيرين في إعدادات النشر أو في ملف البيئة المحلي ثم أعد تشغيل التطبيق.</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={() => router.push('/')} className="px-4 py-2 bg-orange-500 text-white rounded-lg">العودة للصفحة الرئيسية</button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`min-h-screen text-right font-sans transition-colors duration-300 ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-gray-50 text-slate-800'}`} dir="rtl">
       {notification && (
@@ -1094,6 +1115,12 @@ async function checkUser() {
               {restaurant?.name || 'لوحة التحكم'}
             </h1>
           </div>
+
+          {!restaurant && (
+            <div className="ml-4 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200">
+              لم يتم العثور على مطعم مرتبط بحسابك — اذهب إلى الإعدادات أو أنشئ مطعماً جديداً.
+            </div>
+          )}
           <div className="flex gap-4">
             <button
               onClick={toggleTheme}
