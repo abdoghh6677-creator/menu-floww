@@ -294,6 +294,10 @@ export default function MenuPage({ params }) {
   }
 
   useEffect(() => {
+    if (!id) {
+      console.warn('Menu page: missing `id` param, skipping loadMenu until available')
+      return
+    }
     loadMenu()
   }, [id])
 
@@ -469,6 +473,11 @@ export default function MenuPage({ params }) {
   }, [id])
 
   const loadMenu = async () => {
+    if (!id) {
+      console.warn('loadMenu called without id, aborting')
+      return
+    }
+
     try {
       setLoading(true)
 
