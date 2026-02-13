@@ -217,6 +217,38 @@ export default function Dashboard() {
 
   const router = useRouter()
 
+  // Allow creating a restaurant record if missing
+  const createRestaurant = async () => {
+    if (!supabase) return
+    try {
+      setLoading(true)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user || !user.id) {
+        console.error('Cannot create restaurant: user not available')
+        setLoading(false)
+        return
+      }
+
+      const { data, error } = await supabase.from('restaurants').insert([
+        { name: `${user.email.split('@')[0]}-restaurant`, user_id: user.id, is_open: true }
+      ]).select().single()
+
+      if (error) {
+        console.error('Error creating restaurant:', error)
+        setLoading(false)
+        return
+      }
+
+      console.log('Created restaurant:', data)
+      // refresh
+      await checkUser()
+    } catch (e) {
+      console.error('createRestaurant error', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const toggleTheme = () => {
     const newTheme = !darkMode
     setDarkMode(newTheme)
@@ -1117,8 +1149,9 @@ async function checkUser() {
           </div>
 
           {!restaurant && (
-            <div className="ml-4 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200">
-              لم يتم العثور على مطعم مرتبط بحسابك — اذهب إلى الإعدادات أو أنشئ مطعماً جديداً.
+            <div className="ml-4 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200 flex items-center gap-3">
+              <div>لم يتم العثور على مطعم مرتبط بحسابك — اذهب إلى الإعدادات أو أنشئ مطعماً جديداً.</div>
+              <button onClick={createRestaurant} className="px-3 py-1 bg-orange-500 text-white rounded-md">إنشاء مطعمي الآن</button>
             </div>
           )}
           <div className="flex gap-4">
