@@ -13,43 +13,63 @@ import { translations as paymentTranslations, detectLanguage } from '@/lib/trans
 // 🔊 دالة لتشغيل صوت الإشعار
 const playNotificationSound = () => {
   try {
-    // 1️⃣ محاولة استخدام Web Audio API (صوت مولد)
-    try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-      
-      // نمط الجرس: نوتات مختلفة
-      oscillator.frequency.value = 800
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1)
-      
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + 0.1)
-      
-      console.log('✅ Web Audio API تشغيل ناجح')
-    } catch (webAudioErr) {
-      console.log('Web Audio API failed, trying sound files...', webAudioErr)
-      
-      // 2️⃣ جرب صوت من Mixkit
-      const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'
-      const audio = new Audio(soundUrl)
-      audio.volume = 1
-      audio.play().catch(e => {
-        console.log('Mixkit sound failed, trying alternative...', e)
-        
-        // 3️⃣ جرب صوت بديل
-        const beep = new Audio('https://assets.mixkit.co/active_storage/sfx/2867/2867-preview.mp3')
-        beep.volume = 1
-        beep.play().catch(err => console.log('Alternative sound also failed', err))
-      })
+    // Use a shared/resumable AudioContext created after a user gesture
+    if (typeof window === 'undefined') return
+    if (audioContext) {
+      try {
+        const oscillator = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
+
+        oscillator.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+
+        oscillator.frequency.value = 800
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1)
+
+        oscillator.start(audioContext.currentTime)
+        oscillator.stop(audioContext.currentTime + 0.1)
+        console.log('✅ Web Audio API played via shared AudioContext')
+        return
+      } catch (webAudioErr) {
+        console.log('Shared Web Audio failed, falling back to file playback', webAudioErr)
+      }
     }
+
+    // Fallback to simple Audio playback (may still be blocked until user gesture)
+    const soundUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'
+    const audio = new Audio(soundUrl)
+    audio.volume = 1
+    audio.play().catch(e => {
+      console.log('Mixkit sound failed, trying alternative...', e)
+      const beep = new Audio('https://assets.mixkit.co/active_storage/sfx/2867/2867-preview.mp3')
+      beep.volume = 1
+      beep.play().catch(err => console.log('Alternative sound also failed', err))
+    })
   } catch (e) {
     console.error('Audio error:', e)
   }
+}
+
+// Shared audio context and gesture flags
+let audioContext = null
+let userInteracted = false
+
+const initUserGestureListeners = () => {
+  if (typeof window === 'undefined') return
+  if (userInteracted) return
+  const onGesture = async () => {
+    userInteracted = true
+    try {
+      if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)()
+      if (audioContext.state === 'suspended') await audioContext.resume()
+      console.log('✅ Web Audio enabled after user gesture')
+    } catch (err) {
+      console.log('Web Audio init on gesture failed', err)
+    }
+  }
+
+  ['click', 'touchstart', 'keydown'].forEach(evt => document.addEventListener(evt, onGesture, { once: true }))
 }
 
 // 🪟 دالة لإظهار Desktop Notification (إشعارات النظام)
@@ -119,6 +139,11 @@ export default function Dashboard() {
     if (savedTheme === 'dark') {
       setTimeout(() => setDarkMode(true), 0)
     }
+  }, [])
+
+  // Initialize gesture listeners so audio/vibration are allowed after first interaction
+  useEffect(() => {
+    initUserGestureListeners()
   }, [])
 
   const [currentPlan, setCurrentPlan] = useState(null)
@@ -366,11 +391,13 @@ async function checkUser() {
     setRestaurantError('Unexpected restaurants response')
   }
 
-  if (restaurantData) {
+  // Use the fetched restaurantsData (first restaurant) to load dependent data
+  if (Array.isArray(restaurantsData) && restaurantsData.length > 0) {
+    const firstRestaurant = restaurantsData[0]
     console.log('📦 Loading menu items, orders, plan...')
-    loadMenuItems(restaurantData.id)
-    loadOrders(restaurantData.id)
-    loadCurrentPlan(restaurantData.plan_id)
+    await loadMenuItems(firstRestaurant.id)
+    await loadOrders(firstRestaurant.id)
+    await loadCurrentPlan(firstRestaurant.plan_id)
   }
 
   setLoading(false)
@@ -592,7 +619,7 @@ async function checkUser() {
       const setupSubscription = async () => {
         try {
           channel = supabase
-            .channel(`realtime-orders-${restaurant.id}-${Date.now()}`, {
+            .channel(`realtime-orders-${restaurant.id}`, {
               config: {
                 broadcast: { self: true },
                 presence: { key: restaurant.id }
@@ -630,11 +657,11 @@ async function checkUser() {
 
                 // 📳 اهتزاز الجهاز (إذا كان متاحاً - للهاتف)
                 try {
-                  if ('vibrate' in navigator) {
+                  if (userInteracted && 'vibrate' in navigator) {
                     navigator.vibrate([300, 150, 300, 150, 300])
                   }
                 } catch (e) {
-                  console.log('Vibration not supported', e)
+                  console.log('Vibration not supported or blocked', e)
                 }
 
                 // 💬 الإشعار داخل الصفحة
@@ -730,11 +757,11 @@ async function checkUser() {
 
               // 📳 اهتزاز
               try {
-                if ('vibrate' in navigator) {
+                if (userInteracted && 'vibrate' in navigator) {
                   navigator.vibrate([300, 150, 300, 150, 300])
                 }
               } catch (e) {
-                console.log('Vibration not supported', e)
+                console.log('Vibration not supported or blocked', e)
               }
 
               // 💬 الإشعار داخل الصفحة
