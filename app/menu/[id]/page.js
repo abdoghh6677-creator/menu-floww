@@ -12,7 +12,7 @@ import { getOptimizedImage } from '@/lib/imageHelpers'
 
 
 export default function MenuPage({ params }) {
-  const { id } = use(params)
+  const { id } = params
   const [restaurant, setRestaurant] = useState(null)
   const [menuItems, setMenuItems] = useState([])
   const [loading, setLoading] = useState(true)

@@ -150,7 +150,11 @@ export default function Dashboard() {
     instapay_phone: '',
     accepts_cash: true,
     whatsapp_notifications: false,
-    whatsapp_number: ''
+    whatsapp_number: '',
+    facebook_url: '',
+    instagram_url: '',
+    tiktok_url: '',
+    show_social_media: true
   })
 
   // Helper: safely update restaurants row, retrying if schema cache reports missing columns
@@ -255,7 +259,11 @@ export default function Dashboard() {
           instapay_phone: paymentSettings.instapay_phone ?? restaurant.instapay_phone ?? '',
           accepts_cash: paymentSettings.accepts_cash ?? (restaurant.accepts_cash !== false ? true : false),
           whatsapp_notifications: paymentSettings.whatsapp_notifications ?? restaurant.whatsapp_notifications ?? false,
-          whatsapp_number: paymentSettings.whatsapp_number ?? restaurant.whatsapp_number ?? ''
+          whatsapp_number: paymentSettings.whatsapp_number ?? restaurant.whatsapp_number ?? '',
+          facebook_url: restaurant.facebook_url || '',
+          instagram_url: restaurant.instagram_url || '',
+          tiktok_url: restaurant.tiktok_url || '',
+          show_social_media: restaurant.show_social_media !== false ? true : false
         })
       }, 0)
     }
@@ -1007,6 +1015,10 @@ async function checkUser() {
     ,whatsapp_number: settings.whatsapp_number || ''
     ,instapay_phone: settings.instapay_phone || ''
     ,instapay_username: settings.instapay_username || ''
+    ,facebook_url: settings.facebook_url || ''
+    ,instagram_url: settings.instagram_url || ''
+    ,tiktok_url: settings.tiktok_url || ''
+    ,show_social_media: settings.show_social_media
     }
 
     const { data, error } = await safeUpdateRestaurant(settingsToSave)
