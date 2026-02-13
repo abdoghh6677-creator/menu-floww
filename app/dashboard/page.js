@@ -103,6 +103,7 @@ const flashPageTitle = (message, originalTitle) => {
 export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [restaurant, setRestaurant] = useState(null)
+  const [restaurantsList, setRestaurantsList] = useState([])
   const [menuItems, setMenuItems] = useState([])
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -250,6 +251,22 @@ export default function Dashboard() {
     }
   }
 
+  const handleSelectRestaurant = async (selectedId) => {
+    const sel = restaurantsList.find(r => String(r.id) === String(selectedId))
+    if (!sel) return
+    setRestaurant(sel)
+    setLoading(true)
+    try {
+      await loadMenuItems(sel.id)
+      await loadOrders(sel.id)
+      await loadCurrentPlan(sel.plan_id)
+    } catch (e) {
+      console.error('Error loading data for selected restaurant', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const toggleTheme = () => {
     const newTheme = !darkMode
     setDarkMode(newTheme)
@@ -321,24 +338,32 @@ async function checkUser() {
   console.log('✅ User authenticated:', user.email)
   setUser(user)
 
-  // البحث عن المطعم باستخدام user_id لضمان جلب السجل الصحيح
-  const { data: restaurantData, error: fetchError } = await supabase
+  // جلب كل المطاعم المرتبطة بالمستخدم (لدعم أكثر من مطعم)
+  const { data: restaurantsData, error: fetchError } = await supabase
     .from('restaurants')
     .select('*')
     .eq('user_id', user.id)
-    .single()
 
   if (fetchError) {
-    console.error("❌ No restaurant found:", fetchError.message);
+    console.error("❌ Error fetching restaurants:", fetchError.message || fetchError)
     setRestaurantError(fetchError.message || 'فشل في جلب بيانات المطعم')
+    setRestaurantsList([])
+    setRestaurant(null)
+  } else if (Array.isArray(restaurantsData)) {
+    setRestaurantsList(restaurantsData)
+    if (restaurantsData.length === 0) {
+      setRestaurant(null)
+      setRestaurantError('لا يوجد سجل مطعم للمستخدم')
+    } else {
+      // افتراضيًا اختر أول مطعم
+      setRestaurant(restaurantsData[0])
+      setRestaurantError(null)
+      console.log('✅ Restaurants loaded:', restaurantsData.map(r=>r.id))
+    }
   } else {
-    console.log("✅ Restaurant loaded:", restaurantData.name, '(ID:', restaurantData.id, ')')
-  }
-
-  setRestaurant(restaurantData)
-
-  if (!restaurantData && !fetchError) {
-    setRestaurantError('لا يوجد سجل مطعم للمستخدم')
+    setRestaurantsList([])
+    setRestaurant(null)
+    setRestaurantError('Unexpected restaurants response')
   }
 
   if (restaurantData) {
@@ -1149,9 +1174,23 @@ async function checkUser() {
                 className="w-10 h-10 rounded-full object-cover border-2 border-orange-500 shadow-sm"
               />
             )}
-            <h1 className={`text-2xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-              {restaurant?.name || 'لوحة التحكم'}
-            </h1>
+            <div className="flex items-center gap-3">
+              {restaurantsList && restaurantsList.length > 1 ? (
+                <select
+                  value={restaurant?.id || ''}
+                  onChange={(e) => handleSelectRestaurant(e.target.value)}
+                  className="bg-transparent text-2xl font-black tracking-tight focus:outline-none"
+                >
+                  {restaurantsList.map(r => (
+                    <option key={r.id} value={r.id}>{r.name || r.id}</option>
+                  ))}
+                </select>
+              ) : (
+                <h1 className={`text-2xl font-black tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+                  {restaurant?.name || 'لوحة التحكم'}
+                </h1>
+              )}
+            </div>
           </div>
 
           {!restaurant && (
