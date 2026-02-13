@@ -122,6 +122,7 @@ export default function Dashboard() {
 
   const [currentPlan, setCurrentPlan] = useState(null)
   const [notification, setNotification] = useState(null)
+  const [restaurantError, setRestaurantError] = useState(null)
   const [analyticsData, setAnalyticsData] = useState({
     daily: [],
     monthly: [],
@@ -329,11 +330,16 @@ async function checkUser() {
 
   if (fetchError) {
     console.error("❌ No restaurant found:", fetchError.message);
+    setRestaurantError(fetchError.message || 'فشل في جلب بيانات المطعم')
   } else {
     console.log("✅ Restaurant loaded:", restaurantData.name, '(ID:', restaurantData.id, ')')
   }
 
   setRestaurant(restaurantData)
+
+  if (!restaurantData && !fetchError) {
+    setRestaurantError('لا يوجد سجل مطعم للمستخدم')
+  }
 
   if (restaurantData) {
     console.log('📦 Loading menu items, orders, plan...')
@@ -1149,10 +1155,13 @@ async function checkUser() {
           </div>
 
           {!restaurant && (
-            <div className="ml-4 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200 flex items-center gap-3">
-              <div>لم يتم العثور على مطعم مرتبط بحسابك — اذهب إلى الإعدادات أو أنشئ مطعماً جديداً.</div>
-              <button onClick={createRestaurant} className="px-3 py-1 bg-orange-500 text-white rounded-md">إنشاء مطعمي الآن</button>
-            </div>
+                <div className="ml-4 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-200 flex items-center gap-3">
+                  <div className="flex flex-col">
+                    <div>لم يتم العثور على مطعم مرتبط بحسابك — اذهب إلى الإعدادات أو أنشئ مطعماً جديداً.</div>
+                    {restaurantError && <div className="text-xs text-yellow-800/80 mt-1">خطأ: {restaurantError}</div>}
+                  </div>
+                  <button onClick={createRestaurant} className="px-3 py-1 bg-orange-500 text-white rounded-md">إنشاء مطعمي الآن</button>
+                </div>
           )}
           <div className="flex gap-4">
             <button
