@@ -1,470 +1,15 @@
- 'use client'
+
+'use client'
 import { useState, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { supabase } from '@/lib/supabase'
-import { detectLanguage } from '@/lib/translations'
-import { use } from 'react'
+import translationsFallback, { detectLanguage } from '@/lib/translations'
 import BillSplitter from '@/components/BillSplitter'
-import { THEMES } from '@/components/MenuThemes'
+import { getOptimizedImage } from '@/lib/imageHelpers'
 
-const translations = {
-  ar: {
-    loading: 'جاري التحميل...',
-    notFound: 'المطعم غير موجود',
-    subtitle: 'منيو إلكتروني',
-    all: 'الكل',
-    noItems: 'لا توجد أصناف',
-    cart: 'سلة الطلبات',
-    emptyCart: 'السلة فارغة',
-    delete: 'حذف',
-    total: 'المجموع',
-    delivery: 'رسوم التوصيل',
-    grandTotal: 'الإجمالي',
-    checkout: 'تأكيد الطلب',
-    name: 'الاسم *',
-    phone: 'رقم الهاتف *',
-    type: 'نوع الطلب *',
-    dineIn: 'داخل المطعم',
-    deliveryType: 'توصيل',
-    table: 'رقم الطاولة *',
-    address: 'العنوان التفصيلي *',
-    notes: 'ملاحظات (اختياري)',
-    notesPh: 'أي طلبات خاصة...',
-    summary: 'ملخص الطلب:',
-    payment: 'الدفع: الدفع عند الاستلام',
-    confirm: 'تأكيد الطلب ✅',
-    add: '+ إضافة إلى الطلب',
-    addons: 'اختر الإضافات:',
-    sizes: 'اختر الحجم:',
-    cancel: 'إلغاء',
-    addBtn: 'إضافة',
-    success: 'تم استقبال الطلب!',
-    prepTime: 'سيكون الطلب جاهزاً في',
-    mins: 'دقيقة',
-    ok: 'حسناً',
-    split: '💰 تقسيم الفاتورة',
-    cancelSplit: '✕ إلغاء التقسيم',
-    splitDone: '✅ تم تقسيم الفاتورة',
-    splitText: 'تقسيم بين',
-    persons: 'أشخاص',
-    alertEmpty: 'السلة فارغة!',
-    selectSize: 'يرجى اختيار حجم',
-    alertLoc: 'يرجى إدخال العنوان التفصيلي',
-    alertErr: 'حدث خطأ، يرجى المحاولة مرة أخرى',
-    currency: 'ج.م',
-    cartReady: 'الطلب جاهز في السلة',
-    continueShopping: 'متابعة التسوق',
-    pickup: 'استلام',
-    promotions: '🔥 العروضات',
-    validUntil: 'صالح حتى',
-    endsIn: '⏳ ينتهي في',
-    deliveryOnly: 'توصيل فقط',
-    dineInOnly: 'داخل المطعم فقط',
-    search: 'ابحث عن الأصناف...',
-    paymentMethod: 'طريقة الدفع',
-    cash: 'الدفع عند الاستلام',
-    instapay: 'InstaPay',
-    visa: 'Visa / Mastercard (عند الاستلام)',
-    transferTo: 'يرجى التحويل إلى:',
-    uploadReceipt: 'سيتم تأكيد الطلب بعد التحويل',
-    rateOrder: '⭐ قيّم الطلب السابق',
-    ratingTitle: 'كيف كانت تجربتك؟',
-    submitRating: 'إرسال التقييم',
-    feedbackPh: 'اكتب تعليقاتك هنا (اختياري)...',
-    ratingThanks: 'شكراً! تم استقبال التقييم 🎉',
-    haveCoupon: 'هل لديك كوبون؟',
-    couponCode: 'كود الكوبون',
-    apply: 'تطبيق',
-    discount: 'خصم',
-    invalidCoupon: 'كوبون غير صحيح أو منتهي الصلاحية',
-    viewItem: 'عرض التفاصيل',
-    addressExample: 'مثال: شارع النيل، برج الرافدين، الدور 5، شقة 502',
-    addressEntered: '✅ تم إدخال العنوان',
-    paymentInstruction: 'يرجى إتمام التحويل وإرسال صورة الإيصال إلى:',
-    confirmedTransfer: '✅ تأكد من إتمام التحويل قبل تأكيد الطلب'
-  },
-  en: {
-    loading: 'Loading...',
-    notFound: 'Restaurant not found',
-    subtitle: 'Digital Menu',
-    all: 'All',
-    noItems: 'No items found',
-    cart: 'Cart',
-    emptyCart: 'Cart is empty',
-    delete: 'Remove',
-    total: 'Subtotal',
-    delivery: 'Delivery Fee',
-    grandTotal: 'Total',
-    checkout: 'Checkout',
-    name: 'Name *',
-    phone: 'Phone *',
-    type: 'Order Type *',
-    dineIn: 'Dine-in',
-    deliveryType: 'Delivery',
-    table: 'Table Number *',
-    address: 'Detailed Address *',
-    notes: 'Notes (Optional)',
-    notesPh: 'Any special requests...',
-    summary: 'Order Summary:',
-    payment: 'Payment: Cash on Delivery',
-    confirm: 'Confirm Order ✅',
-    add: '+ Add to Order',
-    addons: 'Choose Add-ons (Optional):',
-    sizes: 'Select Size:',
-    cancel: 'Cancel',
-    addBtn: 'Add',
-    success: 'Order Received!',
-    prepTime: 'Your order will be ready in',
-    mins: 'mins',
-    ok: 'OK',
-    split: '💰 Split Bill with Friends',
-    cancelSplit: '✕ Cancel Split',
-    splitDone: '✅ Bill Split',
-    splitText: 'Split among',
-    persons: 'people',
-    alertEmpty: 'Cart is empty!',
-    selectSize: 'Please select a size',
-    alertLoc: 'Please enter detailed address',
-    alertErr: 'An error occurred, try again',
-    currency: 'LE',
-    cartReady: 'Your order is ready in cart',
-    continueShopping: 'Continue Shopping',
-    pickup: 'Pickup',
-    promotions: 'Promotions',
-    validUntil: 'Valid until',
-    endsIn: 'Ends in',
-    deliveryOnly: 'Delivery Only',
-    dineInOnly: 'Dine-in Only',
-    search: 'Search items...',
-    paymentMethod: 'Payment Method',
-    cash: 'Cash on Delivery',
-    instapay: 'InstaPay',
-    visa: 'Visa / Mastercard (on Delivery)',
-    transferTo: 'Please transfer to:',
-    uploadReceipt: 'Order will be confirmed after transfer',
-    rateOrder: '⭐ Rate Previous Order',
-    ratingTitle: 'How was your experience?',
-    submitRating: 'Submit Rating',
-    feedbackPh: 'Write your feedback here (optional)...',
-    ratingThanks: 'Thank you! Rating received 🎉',
-    haveCoupon: 'Have a coupon?',
-    couponCode: 'Coupon Code',
-    apply: 'Apply',
-    discount: 'Discount',
-    invalidCoupon: 'Invalid or expired coupon',
-    viewItem: 'View details',
-    addressExample: 'Example: Nile Street, Al-Rafidain Building, Floor 5, Apt 502',
-    addressEntered: '✅ Address entered',
-    paymentInstruction: 'Please complete the transfer and send receipt image to:',
-    receiveTransfer: 'Transfer receipt number',
-    confirmedTransfer: '✅ Confirm transfer before submitting order'
-  },
-  fr: {
-    loading: 'Chargement...',
-    notFound: 'Restaurant introuvable',
-    subtitle: 'Menu numérique',
-    all: 'Tous',
-    noItems: 'Aucun article',
-    cart: 'Panier',
-    emptyCart: 'Panier vide',
-    delete: 'Supprimer',
-    total: 'Sous-total',
-    delivery: 'Frais de livraison',
-    grandTotal: 'Total',
-    checkout: 'Commander',
-    name: 'Nom *',
-    phone: 'Téléphone *',
-    type: 'Type de commande *',
-    dineIn: '🍽️ Sur place',
-    deliveryType: '🚗 Livraison',
-    table: 'Numéro de table *',
-    address: 'Adresse détaillée *',
-    notes: 'Remarques (Optionnel)',
-    notesPh: 'Toute demande spéciale...',
-    summary: 'Récapitulatif de la commande:',
-    payment: '💰 Paiement: Paiement à la livraison',
-    confirm: 'Confirmer la commande ✅',
-    add: '+ Ajouter',
-    addons: 'Choisir les extras (Optionnel):',
-    sizes: 'Choisir la taille:',
-    cancel: 'Annuler',
-    addBtn: 'Ajouter',
-    success: 'Commande reçue!',
-    prepTime: 'Votre commande sera prête en',
-    mins: 'min',
-    ok: 'OK',
-    split: '💰 Partager la note',
-    cancelSplit: '✕ Annuler le partage',
-    splitDone: '✅ Note partagée',
-    splitText: 'Partagé entre',
-    persons: 'personnes',
-    alertEmpty: 'Le panier est vide!',
-    selectSize: 'Veuillez choisir une taille',
-    alertLoc: 'Veuillez entrer l\'adresse détaillée',
-    alertErr: 'Une erreur est survenue, réessayez',
-    currency: 'LE',
-    cartReady: 'Votre commande est prête dans le panier 🛒',
-    continueShopping: 'Continuer les achats',
-    pickup: '🏪 Retrait',
-    promotions: '🔥 Promotions',
-    validUntil: 'Valable jusqu\'à',
-    endsIn: '⏳ Termine dans',
-    deliveryOnly: 'Livraison seulement 🛵',
-    dineInOnly: 'Sur place seulement 🍽️',
-    search: '🔍 Rechercher...',
-    paymentMethod: 'Méthode de paiement',
-    cash: '💵 Paiement à la livraison',
-    instapay: '📱 InstaPay',
-    visa: '💳 Visa / Mastercard (à la livraison)',
-    transferTo: 'Veuillez transférer à:',
-    uploadReceipt: 'La commande sera confirmée après le virement',
-    rateOrder: '⭐ Noter la commande précédente',
-    ratingTitle: 'Comment était votre expérience?',
-    submitRating: 'Envoyer la note',
-    feedbackPh: 'Écrivez vos commentaires ici (optionnel)...',
-    ratingThanks: 'Merci ! Note reçue 🎉',
-    haveCoupon: 'Vous avez un coupon?',
-    couponCode: 'Code promo',
-    apply: 'Appliquer',
-    discount: 'Remise',
-    invalidCoupon: 'Coupon invalide ou expiré',
-    viewItem: 'Voir les détails',
-    addressExample: 'Exemple: Rue du Nil, Immeuble Al-Rafidain, Étage 5, Apt 502',
-    addressEntered: '✅ Adresse entrée',
-    paymentInstruction: 'Veuillez effectuer le virement et envoyer l\'image du reçu à:',
-    receiveTransfer: 'Numéro de reçu de virement',
-    confirmedTransfer: '✅ Confirmer le virement avant de soumettre la commande'
-  },
-  de: {
-    loading: 'Wird geladen...',
-    notFound: 'Restaurant nicht gefunden',
-    subtitle: 'Digitale Speisekarte',
-    all: 'Alle',
-    noItems: 'Keine Artikel',
-    cart: 'Warenkorb',
-    emptyCart: 'Warenkorb ist leer',
-    delete: 'Entfernen',
-    total: 'Zwischensumme',
-    delivery: 'Liefergebühr',
-    grandTotal: 'Gesamt',
-    checkout: 'Zur Kasse',
-    name: 'Name *',
-    phone: 'Telefon *',
-    type: 'Bestellart *',
-    dineIn: '🍽️ Vor Ort',
-    deliveryType: '🚗 Lieferung',
-    table: 'Tischnummer *',
-    address: 'Detaillierte Adresse *',
-    notes: 'Notizen (optional)',
-    notesPh: 'Besondere Wünsche...',
-    summary: 'Bestellübersicht:',
-    payment: '💰 Zahlung: Zahlung bei Lieferung',
-    confirm: 'Bestellung bestätigen ✅',
-    add: '+ Hinzufügen',
-    addons: 'Wähle Zusatzoptionen (optional):',
-    sizes: 'Größe wählen:',
-    cancel: 'Abbrechen',
-    addBtn: 'Hinzufügen',
-    success: 'Bestellung erhalten!',
-    prepTime: 'Ihre Bestellung ist fertig in',
-    mins: 'Min',
-    ok: 'OK',
-    split: '💰 Rechnung teilen',
-    cancelSplit: '✕ Teilen abbrechen',
-    splitDone: '✅ Rechnung geteilt',
-    splitText: 'Geteilt auf',
-    persons: 'Personen',
-    alertEmpty: 'Warenkorb ist leer!',
-    selectSize: 'Bitte Größe wählen',
-    alertLoc: 'Bitte detaillierte Adresse eingeben',
-    alertErr: 'Ein Fehler ist aufgetreten, versuche es erneut',
-    currency: 'LE',
-    cartReady: 'Ihre Bestellung ist im Warenkorb 🛒',
-    continueShopping: 'Weiter einkaufen',
-    pickup: '🏪 Abholung',
-    promotions: '🔥 Aktionen',
-    validUntil: 'Gültig bis',
-    endsIn: '⏳ Läuft ab in',
-    deliveryOnly: 'Nur Lieferung 🛵',
-    dineInOnly: 'Nur Vor Ort 🍽️',
-    search: '🔍 Artikel suchen...',
-    paymentMethod: 'Zahlungsmethode',
-    cash: '💵 Zahlung bei Lieferung',
-    instapay: '📱 InstaPay',
-    visa: '💳 Visa / Mastercard (bei Lieferung)',
-    transferTo: 'Bitte überweisen an:',
-    uploadReceipt: 'Bestellung wird nach Überweisung bestätigt',
-    rateOrder: '⭐ Bewerte vorherige Bestellung',
-    ratingTitle: 'Wie war Ihre Erfahrung?',
-    submitRating: 'Bewertung absenden',
-    feedbackPh: 'Schreibe hier dein Feedback (optional)...',
-    ratingThanks: 'Danke! Bewertung erhalten 🎉',
-    haveCoupon: 'Haben Sie einen Gutschein?',
-    couponCode: 'Gutscheincode',
-    apply: 'Anwenden',
-    discount: 'Rabatt',
-    invalidCoupon: 'Ungültiger oder abgelaufener Gutschein',
-    viewItem: 'Details anzeigen',
-    addressExample: 'Beispiel: Nil-Straße, Al-Rafidain-Gebäude, 5. Stock, Apt 502',
-    addressEntered: '✅ Adresse eingegeben',
-    paymentInstruction: 'Bitte überweisen Sie und senden Sie ein Foto des Belegs an:',
-    receiveTransfer: 'Überweisungsbelegnummer',
-    confirmedTransfer: '✅ Überweisung bestätigen vor dem Absenden der Bestellung'
-  },
-  ru: {
-    loading: 'Загрузка...',
-    notFound: 'Ресторан не найден',
-    subtitle: 'Цифровое меню',
-    all: 'Все',
-    noItems: 'Нет товаров',
-    cart: 'Корзина',
-    emptyCart: 'Корзина пуста',
-    delete: 'Удалить',
-    total: 'Промежуточный итог',
-    delivery: 'Комиссия за доставку',
-    grandTotal: 'Итого',
-    checkout: 'Оформить заказ',
-    name: 'Имя *',
-    phone: 'Телефон *',
-    type: 'Тип заказа *',
-    dineIn: '🍽️ На месте',
-    deliveryType: '🚗 Доставка',
-    table: 'Номер стола *',
-    address: 'Подробный адрес *',
-    notes: 'Примечания (необязательно)',
-    notesPh: 'Любые особые пожелания...',
-    summary: 'Сводка заказа:',
-    payment: '💰 Оплата: оплата при получении',
-    confirm: 'Подтвердить заказ ✅',
-    add: '+ Добавить',
-    addons: 'Выберите добавки (необязательно):',
-    sizes: 'Выберите размер:',
-    cancel: 'Отмена',
-    addBtn: 'Добавить',
-    success: 'Заказ получен!',
-    prepTime: 'Ваш заказ будет готов через',
-    mins: 'мин',
-    ok: 'Ок',
-    split: '💰 Разделить счет',
-    cancelSplit: '✕ Отменить разделение',
-    splitDone: '✅ Счет разделен',
-    splitText: 'Разделено на',
-    persons: 'человек',
-    alertEmpty: 'Корзина пуста!',
-    selectSize: 'Пожалуйста, выберите размер',
-    alertLoc: 'Пожалуйста, укажите подробный адрес',
-    alertErr: 'Произошла ошибка, попробуйте снова',
-    currency: 'LE',
-    cartReady: 'Ваш заказ готов в корзине 🛒',
-    continueShopping: 'Продолжить покупки',
-    pickup: '🏪 Самовывоз',
-    promotions: '🔥 Акции',
-    validUntil: 'Действительно до',
-    endsIn: '⏳ Заканчивается через',
-    deliveryOnly: 'Только доставка 🛵',
-    dineInOnly: 'Только на месте 🍽️',
-    search: '🔍 Поиск...',
-    paymentMethod: 'Способ оплаты',
-    cash: '💵 Наличные при получении',
-    instapay: '📱 InstaPay',
-    visa: '💳 Visa / Mastercard (при получении)',
-    transferTo: 'Пожалуйста, переведите на:',
-    uploadReceipt: 'Заказ будет подтвержден после перевода',
-    rateOrder: '⭐ Оценить предыдущий заказ',
-    ratingTitle: 'Как прошел ваш опыт?',
-    submitRating: 'Отправить оценку',
-    feedbackPh: 'Напишите отзыв здесь (необязательно)...',
-    ratingThanks: 'Спасибо! Оценка получена 🎉',
-    haveCoupon: 'Есть купон?',
-    couponCode: 'Промокод',
-    apply: 'Применить',
-    discount: 'Скидка',
-    invalidCoupon: 'Неверный или просроченный купон',
-    viewItem: 'Просмотреть детали',
-    addressExample: 'Пример: улица Нила, здание Аль-Рафидайн, этаж 5, кв. 502',
-    addressEntered: '✅ Адрес введен',
-    paymentInstruction: 'Пожалуйста, выполните перевод и отправьте фото квитанции на:',
-    receiveTransfer: 'Номер квитанции о переводе',
-    confirmedTransfer: '✅ Подтвердите перевод перед отправкой заказа'
-  },
-  ja: {
-    loading: '読み込み中...',
-    notFound: 'レストランが見つかりません',
-    subtitle: 'デジタルメニュー',
-    all: 'すべて',
-    noItems: '商品がありません',
-    cart: 'カート',
-    emptyCart: 'カートは空です',
-    delete: '削除',
-    total: '小計',
-    delivery: '配送料',
-    grandTotal: '合計',
-    checkout: '注文する',
-    name: 'お名前 *',
-    phone: '電話番号 *',
-    type: '注文タイプ *',
-    dineIn: '🍽️ 店内飲食',
-    deliveryType: '🚗 デリバリー',
-    table: 'テーブル番号 *',
-    location: '配達場所 * 📍',
-    notes: '備考 (任意)',
-    notesPh: '特別なご要望...',
-    summary: '注文内容:',
-    payment: '💰 支払い: 代金引換 (現金)',
-    confirm: '注文を確定 ✅',
-    add: '+ 追加',
-    addons: 'トッピング (任意):',
-    sizes: 'サイズを選択:',
-    cancel: 'キャンセル',
-    addBtn: '追加',
-    success: '注文完了!',
-    prepTime: '調理時間: 約',
-    mins: '分',
-    ok: 'OK',
-    split: '💰 割り勘にする',
-    cancelSplit: '✕ 割り勘をやめる',
-    splitDone: '✅ 割り勘設定済み',
-    splitText: '人数:',
-    persons: '人',
-    alertEmpty: 'カートは空です!',
-    selectSize: 'サイズを選択してください',
-    alertLoc: '配達場所を選択してください',
-    alertErr: 'エラーが発生しました',
-    currency: 'LE',
-    cartReady: 'カートに注文が入りました 🛒',
-    continueShopping: 'ショッピングを続ける',
-    pickup: '🏪 テイクアウト',
-    promotions: '🔥 プロモーション',
-    validUntil: '有効期限',
-    endsIn: '⏳ 終了まで',
-    deliveryOnly: 'デリバリーのみ 🛵',
-    dineInOnly: '店内のみ 🍽️',
-    search: '🔍 商品を検索...',
-    paymentMethod: '支払方法',
-    cash: '💵 代金引換',
-    instapay: '📱 InstaPay',
-    visa: '💳 Visa / Mastercard',
-    transferTo: '振込先:',
-    uploadReceipt: '振込後に注文が確定します',
-    rateOrder: '⭐ 前回の注文を評価',
-    ratingTitle: '体験はいかがでしたか？',
-    submitRating: '評価を送信',
-    feedbackPh: 'フィードバックをここに書いてください（任意）...',
-    ratingThanks: 'ありがとうございます！評価を受け取りました 🎉',
-    haveCoupon: 'クーポンをお持ちですか？',
-    couponCode: 'クーポンコード',
-    apply: '適用',
-    discount: '割引',
-    invalidCoupon: '無効なクーポン',
-    viewItem: '詳細を見る',
-    addressExample: '例: 五番街、ラフィダイン建物、5階、502号室',
-    addressEntered: '✅ 住所を入力しました',
-    paymentInstruction: '振込を完了し、領収書の写真を以下に送ってください:',
-    receiveTransfer: '振込領収書番号',
-    confirmedTransfer: '✅ 注文を送信する前に振込を確認してください'
-  }
-}
+// load themes lazily to keep initial bundle small
+
 
 export default function MenuPage({ params }) {
   const { id } = use(params)
@@ -489,6 +34,7 @@ export default function MenuPage({ params }) {
   const [billSplitData, setBillSplitData] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [visibleCount, setVisibleCount] = useState(20)
   const [paymentMethod, setPaymentMethod] = useState('cash')
   const [showInstaPayModal, setShowInstaPayModal] = useState(false)
   const [showRating, setShowRating] = useState(false)
@@ -496,7 +42,8 @@ export default function MenuPage({ params }) {
   const [ratingValue, setRatingValue] = useState(5)
   const [ratingFeedback, setRatingFeedback] = useState('')
   const [showAddedNotification, setShowAddedNotification] = useState(false)
-  const [theme, setTheme] = useState(THEMES.modern)
+  const [theme, setTheme] = useState(null)
+  const [themesState, setThemesState] = useState(null)
   const [showCouponInput, setShowCouponInput] = useState(false)
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState(null)
@@ -557,7 +104,24 @@ export default function MenuPage({ params }) {
     }
   }, [])
 
-  const t = translations[language] || translations['ar']
+  useEffect(() => {
+    let mounted = true
+    import('@/lib/themes')
+      .then((m) => { if (mounted) setThemesState(m.THEMES || m.default || m) })
+      .catch((e) => console.error('Failed loading themes', e))
+    return () => { mounted = false }
+  }, [])
+
+  const [translationsState, setTranslationsState] = useState(null)
+  useEffect(() => {
+    let mounted = true
+    import('@/lib/menuTranslations')
+      .then((m) => { if (mounted) setTranslationsState(m.default || m) })
+      .catch((e) => console.error('Failed loading menu translations', e))
+    return () => { mounted = false }
+  }, [])
+
+  const t = (translationsState ? (translationsState[language] || translationsState['ar']) : (translationsFallback[language] || translationsFallback['ar']))
 
   // قائمة اللغات المدعومة وترجمات الأسماء للزر
   const SUPPORTED_LANGS = ['ar', 'en', 'fr', 'de', 'ru', 'ja']
@@ -726,8 +290,7 @@ export default function MenuPage({ params }) {
 
   // دالة للحصول على ترجمات النصوص الثابتة
   const getFixedText = (key) => {
-    const langTexts = fixedTextTranslations[language] || fixedTextTranslations['en']
-    return langTexts[key] || key
+    return (t && t[key]) || key
   }
 
   useEffect(() => {
@@ -780,7 +343,7 @@ export default function MenuPage({ params }) {
   // Subscribe to restaurant updates so open menu pages (phones/desktops)
   // receive admin changes immediately and ignore local overrides.
   useEffect(() => {
-    if (!supabase || !id) return
+    if (!supabase || !id || loading) return
 
     let channel
     try {
@@ -820,7 +383,7 @@ export default function MenuPage({ params }) {
         // ignore
       }
     }
-  }, [id])
+  }, [id, loading])
 
   // When user opens checkout, ensure we have freshest DB values (avoid stale localStorage on phones)
   useEffect(() => {
@@ -906,67 +469,84 @@ export default function MenuPage({ params }) {
   }, [id])
 
   const loadMenu = async () => {
-    const { data: restaurantData, error: restaurantError } = await supabase
-      .from('restaurants')
-      .select('*')
-      .eq('id', id)
-      .single()
+    try {
+      setLoading(true)
 
-    if (restaurantError) {
-      console.error('Error loading restaurant:', restaurantError)
-    }
-    
-    // Ensure safe defaults for payment/delivery settings from DB (localStorage must not override admin settings)
-    if (restaurantData) {
-      restaurantData.accepts_delivery = restaurantData.accepts_delivery ?? true
-      restaurantData.accepts_dine_in = restaurantData.accepts_dine_in ?? true
-      restaurantData.accepts_pickup = restaurantData.accepts_pickup ?? true
-      restaurantData.accepts_cash = restaurantData.accepts_cash !== undefined ? restaurantData.accepts_cash : true
-      restaurantData.accepts_instapay = restaurantData.accepts_instapay === true
-      restaurantData.accepts_visa = restaurantData.accepts_visa !== false
-    }
+      const restaurantQ = supabase.from('restaurants').select('*').eq('id', id).single()
+      const themeQ = supabase.from('restaurant_themes').select('*').eq('restaurant_id', id).single()
+      const itemsQ = supabase
+        .from('menu_items')
+        .select(`
+          id,
+          name,
+          name_en,
+          name_fr,
+          name_de,
+          name_ru,
+          name_ja,
+          description,
+          description_en,
+          description_fr,
+          description_de,
+          description_ru,
+          description_ja,
+          price,
+          category,
+          image_url,
+          has_promotion,
+          promotion_discount,
+          addons_header,
+          hide_when_available,
+          created_at,
+          menu_addons(id,name,price,name_en,name_fr,name_de,name_ru,name_ja),
+          item_variants(id,name,price,is_default,name_en,name_fr,name_de,name_ru,name_ja)
+        `)
+        .eq('restaurant_id', id)
+        .order('category')
 
-    setRestaurant(restaurantData)
+      const [restaurantRes, themeRes, itemsRes] = await Promise.all([restaurantQ, themeQ, itemsQ])
 
-    // Load Theme
-    const { data: themeData } = await supabase
-      .from('restaurant_themes')
-      .select('*')
-      .eq('restaurant_id', id)
-      .single()
-    
-    if (themeData && THEMES[themeData.theme_id]) {
-      setTheme(THEMES[themeData.theme_id])
-    }
+      const { data: restaurantData, error: restaurantError } = restaurantRes || {}
+      const { data: themeData } = themeRes || {}
+      const { data: itemsData, error: itemsError } = itemsRes || {}
 
-    const { data: itemsData, error: itemsError } = await supabase
-      .from('menu_items')
-      .select(`
-        *,
-        menu_addons (*),
-        item_variants (*)
-      `)
-      .eq('restaurant_id', id)
-      .order('category')
-
-    if (itemsError) {
-      console.error('Error loading menu items:', itemsError.message || itemsError)
-    }
-
-    setMenuItems(itemsData || [])
-    
-    // البحث عن الأصناف التي تحتوي على عروض
-    if (itemsData) {
-      const itemsWithPromo = itemsData.filter(item => item.has_promotion && item.promotion_discount)
-      if (itemsWithPromo.length > 0) {
-        // إظهار الإشعار عند وجود عروض
-        setTimeout(() => {
-          setShowPromoAlert(true)
-        }, 500)
+      if (restaurantError) {
+        console.error('Error loading restaurant:', restaurantError)
       }
+
+      // Ensure safe defaults for payment/delivery settings from DB
+      if (restaurantData) {
+        restaurantData.accepts_delivery = restaurantData.accepts_delivery ?? true
+        restaurantData.accepts_dine_in = restaurantData.accepts_dine_in ?? true
+        restaurantData.accepts_pickup = restaurantData.accepts_pickup ?? true
+        restaurantData.accepts_cash = restaurantData.accepts_cash !== undefined ? restaurantData.accepts_cash : true
+        restaurantData.accepts_instapay = restaurantData.accepts_instapay === true
+        restaurantData.accepts_visa = restaurantData.accepts_visa !== false
+        setRestaurant(restaurantData)
+      }
+
+      if (themeData) {
+        const chosen = themesState && themesState[themeData.theme_id] ? themesState[themeData.theme_id] : (themesState && themesState.modern ? themesState.modern : null)
+        if (chosen) setTheme(chosen)
+      }
+
+      if (itemsError) {
+        console.error('Error loading menu items:', itemsError.message || itemsError)
+      }
+
+      setMenuItems(itemsData || [])
+
+      if (itemsData) {
+        const itemsWithPromo = itemsData.filter(item => item.has_promotion && item.promotion_discount)
+        if (itemsWithPromo.length > 0) {
+          setTimeout(() => setShowPromoAlert(true), 500)
+        }
+      }
+    } catch (e) {
+      console.error('loadMenu exception:', e)
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   }
 
   const categories = ['__ALL__', ...new Set(menuItems.map(item => item.category))]
@@ -993,6 +573,8 @@ export default function MenuPage({ params }) {
 
     return matchesCategory && matchesSearch
   })
+
+  const visibleFilteredItems = filteredItems.slice(0, visibleCount)
 
   const addToCart = (item, selectedAddons = [], selectedVariant = null) => {
     const basePrice = selectedVariant ? parseFloat(selectedVariant.price) : parseFloat(item.price)
@@ -1553,6 +1135,7 @@ export default function MenuPage({ params }) {
               <img
                 src={currentPromo.image_url}
                 alt={currentPromo.title}
+                loading="lazy"
                 className="w-full h-48 object-cover rounded-lg mb-6"
               />
             )}
@@ -1632,12 +1215,13 @@ export default function MenuPage({ params }) {
 {/* Header - High Quality Version */}
 <div className="relative overflow-hidden">
   {/* Background Image */}
-  <div className="relative h-72">
+      <div className="relative h-72">
     {restaurant.cover_image_url ? (
-      <div
-        aria-hidden
-        className="absolute inset-0 w-full h-full bg-center bg-no-repeat bg-cover"
-        style={{ backgroundImage: `url(${restaurant.cover_image_url})` }}
+      <img
+        src={getOptimizedImage(restaurant.cover_image_url)}
+        alt={restaurant.name}
+        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover"
       />
     ) : (
       <div className={`absolute inset-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}></div>
@@ -1675,6 +1259,7 @@ export default function MenuPage({ params }) {
           <img 
             src={restaurant.logo_url} 
             alt={restaurant.name}
+            loading="lazy"
             className="w-full h-full object-cover rounded-full"
             style={{ imageRendering: 'high-quality' }}
           />
@@ -1763,7 +1348,7 @@ export default function MenuPage({ params }) {
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
-            {filteredItems.map((item) => (
+            {visibleFilteredItems.map((item) => (
               <MenuItem
                 key={item.id}
                 item={item}
@@ -1776,6 +1361,13 @@ export default function MenuPage({ params }) {
                 darkMode={darkMode}
               />
             ))}
+            {filteredItems.length > visibleCount && (
+              <div className="text-center py-4">
+                <button onClick={() => setVisibleCount(prev => prev + 20)} className="px-6 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                  تحميل المزيد
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -2064,14 +1656,15 @@ export default function MenuPage({ params }) {
                             aria-label="Pay with InstaPay"
                           >
                             <img
-                              src="/instapay.png"
-                              alt="InstaPay"
-                              onError={(e) => { e.currentTarget.style.display = 'none' }}
-                              className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
-                            />
+                                    src="/instapay.png"
+                                    alt="InstaPay"
+                                    loading="lazy"
+                                    onError={(e) => { e.currentTarget.style.display = 'none' }}
+                                    className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto object-contain"
+                                  />
                           </a>
                           {/* Total amount */}
-                          <p className="text-center text-base sm:text-lg font-bold text-purple-900">💰 {translations[language]?.currency || 'LE'}: {getCartTotal()}</p>
+                          <p className="text-center text-base sm:text-lg font-bold text-purple-900">💰 {t.currency || 'LE'}: {getCartTotal()}</p>
                         </div>
                       )}
                     </div>
@@ -2284,8 +1877,9 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
           <div className={`w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 relative ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
             {currentImage ? (
               <img
-                src={currentImage}
+                src={getOptimizedImage(currentImage)}
                 alt={name}
+                loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
             ) : (
@@ -2335,7 +1929,7 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
           <div className={`w-full max-w-lg rounded-lg p-4 sm:p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-36 h-32 sm:h-36 rounded-xl overflow-hidden flex-shrink-0">
-                {currentImage ? <img src={currentImage} alt={name} className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
+                {currentImage ? <img src={getOptimizedImage(currentImage)} alt={name} loading="lazy" className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
               </div>
               <div className="flex-1">
                 <h3 className="text-lg sm:text-xl font-bold mb-1">{name}</h3>

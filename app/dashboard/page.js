@@ -6,6 +6,7 @@ import { QRCodeCanvas } from 'qrcode.react'
 import { v4 as uuidv4 } from 'uuid'
 import { translateText } from '@/lib/translate'
 import PlanManagement from '@/components/PlanManagement'
+import PrintInvoice from '@/components/PrintInvoice'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { translations as paymentTranslations, detectLanguage } from '@/lib/translations'
 
@@ -1762,6 +1763,9 @@ async function checkUser() {
                        إرسال إشعار WhatsApp
                      </button>
                    )}
+
+                   {/* زر طباعة الفاتورة */}
+                   <PrintInvoice order={order} restaurant={restaurant} darkMode={darkMode} />
                    
                    {order.is_split && (
                     <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3 mt-2">
