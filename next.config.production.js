@@ -1,9 +1,11 @@
 /**
  * 🚀 إعدادات الإنتاج - Production Configuration
- * تحسينات الأداء والأمان للنشر أونلاين
+ * تم تعطيل هذا الملف لتجنب تعارض مع next.config.ts
+ * جميع الإعدادات في next.config.ts
  */
 
-module.exports = {
+// هذا الملف معطل - الإعدادات في next.config.ts
+module.exports = {};
   // Next.js Config
   reactStrictMode: true,
   
