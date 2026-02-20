@@ -1067,7 +1067,7 @@ export default function MenuPage({ params }) {
   }
 
   return (
-    <div className={`min-h-screen pb-32 transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-gray-100' : ''}`} style={{ backgroundColor: darkMode ? undefined : UI_THEME.pageBg, fontFamily: UI_THEME.fontFamily, color: UI_THEME.text }}>
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111111] font-inter transition-all duration-300" style={{ fontFamily: 'var(--font-inter)' }}>
       {/* Promotions Alert Modal - showing items with discounts */}
       {showPromoAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -1221,7 +1221,7 @@ export default function MenuPage({ params }) {
           </div>
         </div>
       )}
-{/* Header - High Quality Version */}
+{/* Header - Premium Luxury Version */}
 <div className="relative overflow-hidden">
   {/* Background Image */}
       <div className="relative h-72">
@@ -1233,18 +1233,18 @@ export default function MenuPage({ params }) {
         className="absolute inset-0 w-full h-full object-cover"
       />
     ) : (
-      <div className={`absolute inset-0 ${darkMode ? 'bg-gray-800' : 'bg-gray-200'}`}></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-[#111111] to-[#2a2a2a]"></div>
     )}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
   </div>
 
-  {/* Content - باقي الكود كما هو */}
+  {/* Content */}
   <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
     {/* Status - Right */}
     <div className="absolute top-4 right-4 z-20">
       <span className={`px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md ${
         restaurant.is_open 
-          ? 'bg-green-500/90 text-white' 
+          ? 'bg-[#D4AF37] text-[#111111]' 
           : 'bg-red-500/90 text-white'
       }`}>
         {restaurant.is_open ? '🟢 مفتوح' : '🔴 مغلق'}
@@ -1263,7 +1263,7 @@ export default function MenuPage({ params }) {
 
     {/* Center: Logo & Name */}
     <div className="flex flex-col items-center z-10">
-      <div className="bg-white p-1 rounded-full shadow-2xl mb-2 sm:mb-4 w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center overflow-hidden border-4 border-white/30">
+      <div className="bg-white p-1 rounded-full shadow-2xl mb-2 sm:mb-4 w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center overflow-hidden border-4 border-[#D4AF37]/30">
         {restaurant.logo_url ? (
           <img 
             src={restaurant.logo_url} 
@@ -1286,10 +1286,10 @@ export default function MenuPage({ params }) {
 </div>
 
       {/* Search Bar */}
-      <div className="max-w-4xl mx-auto px-2 sm:px-4 mt-3 sm:mt-6 flex items-center gap-2 sm:gap-3">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-6 flex items-center gap-3">
             <button
               onClick={toggleTheme}
-              className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border transition-all shadow-sm active:scale-95 text-lg sm:text-xl ${darkMode ? 'bg-gray-800 border-gray-700 text-yellow-400 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-100'}`}
+              className="p-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 active:scale-95 text-lg"
             >
               {darkMode ? '☀️' : '🌙'}
             </button>
@@ -1299,19 +1299,19 @@ export default function MenuPage({ params }) {
               placeholder={t.search}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full px-2 sm:px-4 py-2 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border outline-none transition-all shadow-sm focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-200 text-black placeholder-gray-400'}`}
+              className="w-full px-4 py-3 text-base rounded-xl bg-white border border-gray-200 outline-none transition-all duration-200 shadow-sm focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400"
             />
             </div>
             <div className="relative">
               <button
                 onClick={() => setShowLangList(prev => !prev)}
-                className={`px-2 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border font-bold text-xs sm:text-sm transition-all shadow-sm active:scale-95 whitespace-nowrap ${darkMode ? 'bg-gray-800 border-gray-700 text-white hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-900 hover:bg-gray-100'}`}
+                className="px-4 py-3 rounded-xl bg-white border border-gray-200 font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-95 whitespace-nowrap"
               >
                 {LANG_LABELS[language] || language.toUpperCase()}
               </button>
 
               {showLangList && (
-                <div className={`absolute right-0 mt-2 w-44 rounded-xl shadow-lg z-40 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
+                <div className="absolute right-0 mt-2 w-44 rounded-xl shadow-lg z-40 bg-white border border-gray-200">
                   {SUPPORTED_LANGS.map((lng) => (
                     <button
                       key={lng}
@@ -1320,7 +1320,7 @@ export default function MenuPage({ params }) {
                         try { localStorage.setItem('siteLanguage', lng) } catch (e) {}
                         setShowLangList(false)
                       }}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
+                      className="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl"
                     >
                       {LANG_LABELS[lng] || lng.toUpperCase()}
                     </button>
@@ -1331,19 +1331,22 @@ export default function MenuPage({ params }) {
       </div>
 
       {/* Categories */}
-      <div className={`max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-4 sticky top-0 z-30 backdrop-blur-sm transition-all ${darkMode ? 'bg-gray-900/95' : 'bg-gray-50/95'}`}>
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 no-scrollbar">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 sticky top-0 z-30 bg-[#FAFAFA]/95 backdrop-blur-sm">
+        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full font-medium text-xs sm:text-sm whitespace-nowrap transition-all duration-200 ${
+              className={`relative px-5 py-2.5 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-300 hover:shadow-md ${
                 selectedCategory === cat
-                  ? 'bg-orange-600 text-white shadow-lg scale-105'
-                  : (darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200')
+                  ? 'bg-[#D4AF37] text-[#111111] shadow-lg'
+                  : 'bg-white text-[#111111] hover:bg-gray-50 border border-gray-200'
               }`}
             >
               {cat === '__ALL__' ? t.all : cat === '__PROMOTIONS__' ? t.promotions : translateText(cat)}
+              {selectedCategory === cat && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-0.5 bg-[#111111] rounded-full animate-pulse"></div>
+              )}
             </button>
           ))}
         </div>
@@ -1367,7 +1370,6 @@ export default function MenuPage({ params }) {
                 onAddAddonsOnly={addAddonsOnly}
                 onRemoveFromCart={removeFromCart}
                 cart={cart}
-                darkMode={darkMode}
               />
             ))}
             {filteredItems.length > visibleCount && (
@@ -1381,151 +1383,207 @@ export default function MenuPage({ params }) {
         )}
       </div>
 
-      {/* Cart Modal Placeholder */}
-      {showCart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className={`w-full max-w-md rounded-lg p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">{t.cart}</h3>
-              <button onClick={() => setShowCart(false)}>×</button>
-            </div>
+      {/* Cart Sliding Drawer */}
+      <div className={`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${showCart ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex flex-col h-full">
+          {/* Cart Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-100">
+            <h3 className="text-xl font-bold text-[#111111]">{t.cart}</h3>
+            <button 
+              onClick={() => setShowCart(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
+            >
+              <span className="text-[#111111] text-xl font-bold">×</span>
+            </button>
+          </div>
+
+          {/* Cart Content */}
+          <div className="flex-1 overflow-y-auto p-6">
             {cart.length === 0 ? (
-              <p className="text-center py-4">{t.emptyCart}</p>
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="text-6xl mb-4">🛒</div>
+                <p className="text-gray-500 text-lg">{t.emptyCart}</p>
+              </div>
             ) : (
-              <>
-                <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
-                  {cart.map(item => (
-                    <div key={item.cartId} className="flex justify-between items-start border-b pb-3">
+              <div className="space-y-4">
+                {cart.map(item => (
+                  <div key={item.cartId} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <h4 className="font-bold">
-                          {item.quantity > 1 && <span className="text-orange-600 mx-1">{item.quantity}x</span>}
+                        <h4 className="font-semibold text-[#111111]">
+                          {item.quantity > 1 && <span className="text-[#D4AF37] mr-2">{item.quantity}x</span>}
                           {item.name}
                         </h4>
                         {item.selectedVariant && (
-                          <p className="text-sm text-purple-600">
-                            الحجم: {item.selectedVariant.name}
+                          <p className="text-sm text-gray-600 mt-1">
+                            {t.size || 'Size'}: {item.selectedVariant.name}
                           </p>
                         )}
                         {item.selectedAddons.length > 0 && (
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 mt-1">
                             + {item.selectedAddons.map(a => a.name).join(', ')}
                           </p>
                         )}
-                        <p className="text-orange-600 font-semibold">{item.totalPrice} ج</p>
                       </div>
                       <button
                         onClick={() => removeFromCart(item.cartId)}
-                        className="text-red-600 hover:text-red-800"
+                        className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-100 transition-colors duration-200 ml-2"
                       >
-                        {t.delete}
+                        <span className="text-red-500 text-sm font-bold">×</span>
                       </button>
                     </div>
-                  ))}
-                </div>
-                <div className="flex justify-between font-bold text-lg mb-4">
-                  <span>{t.total}</span>
-                  <span>{getCartTotal()} {t.currency}</span>
-                </div>
-                <button 
-                  onClick={() => { setShowCart(false); openCheckout(); }}
-                  className="w-full bg-orange-600 text-white py-3 rounded-lg font-bold"
-                >
-                  {t.checkout}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Checkout Modal Placeholder */}
-      {showCheckout && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
-          <div className="w-full max-w-md overflow-y-auto" style={{ background: UI_THEME.cardBg, borderRadius: UI_THEME.radii.card, padding: 24, boxShadow: UI_THEME.shadow, color: UI_THEME.text, maxHeight: '95vh' }}>
-            <h3 className="text-xl font-bold mb-4">{t.checkout}</h3>
-            {checkoutLoading && (
-              <div className="text-center py-4">
-                <div className="text-lg font-semibold">🔄 جاري تحديث الإعدادات...</div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#D4AF37] font-bold">{item.totalPrice} {t.currency}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
-            {!checkoutLoading && (
-            <form onSubmit={handleCheckout} className="space-y-4">
-              <input 
-                type="text" 
-                placeholder={t.name} 
-                required 
-                className={`w-full`}
-                style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
-                value={customerInfo.name}
-                onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})}
-              />
-              <input 
-                type="tel" 
-                placeholder={t.phone} 
-                required 
-                className={`w-full`}
-                style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
-                value={customerInfo.phone}
-                onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})}
-              />
+          </div>
 
-              {/* Tip (optional) removed */}
+          {/* Cart Footer */}
+          {cart.length > 0 && (
+            <div className="border-t border-gray-100 p-6">
+              <div className="flex justify-between items-center font-bold text-lg mb-4">
+                <span className="text-[#111111]">{t.total}</span>
+                <span className="text-[#D4AF37]">{getCartTotal()} {t.currency}</span>
+              </div>
+              <button 
+                onClick={() => { setShowCart(false); openCheckout(); }}
+                className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:shadow-lg"
+              >
+                {t.checkout}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Cart Overlay */}
+      {showCart && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300"
+          onClick={() => setShowCart(false)}
+        ></div>
+      )}
+
+      {/* Checkout Modal */}
+      {showCheckout && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-[#111111]">{t.checkout}</h3>
+                <button 
+                  onClick={() => setShowCheckout(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors duration-200"
+                >
+                  <span className="text-[#111111] text-xl font-bold">×</span>
+                </button>
+              </div>
+
+              {checkoutLoading && (
+                <div className="text-center py-8">
+                  <div className="text-lg font-semibold text-[#111111]">🔄 {t.loading || 'Loading'}...</div>
+                </div>
+              )}
+
+              {!checkoutLoading && (
+                <form onSubmit={handleCheckout} className="space-y-4">
+                  <div>
+                    <input 
+                      type="text" 
+                      placeholder={t.name}
+                      required 
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#111111] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400"
+                      value={customerInfo.name}
+                      onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <input 
+                      type="tel" 
+                      placeholder={t.phone}
+                      required 
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#111111] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400"
+                      value={customerInfo.phone}
+                      onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                    />
+                  </div>
 
               {/* Order Type Selection */}
-              <div className={`grid gap-2 ${
-                [(checkoutRestaurant || restaurant)?.accepts_dine_in, (checkoutRestaurant || restaurant)?.accepts_delivery, (checkoutRestaurant || restaurant)?.accepts_pickup !== false].filter(Boolean).length === 3 ? 'grid-cols-3' : 
-                [(checkoutRestaurant || restaurant)?.accepts_dine_in, (checkoutRestaurant || restaurant)?.accepts_delivery, (checkoutRestaurant || restaurant)?.accepts_pickup !== false].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
-              }`}>
-                {(checkoutRestaurant || restaurant)?.accepts_dine_in && (
-                  <button
-                    type="button"
-                    onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'dine-in' })}
-                    className={`p-2 rounded border text-sm transition-colors ${customerInfo.orderType === 'dine-in' ? 'bg-orange-100 border-orange-500 text-orange-700' : (darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50')}`}
-                  >
-                    <span className="flex items-center gap-2"><Icon name="dineIn" size={18} />{t.dineIn}</span>
-                  </button>
-                )}
-                {(checkoutRestaurant || restaurant)?.accepts_delivery && (
-                  <button
-                    type="button"
-                    onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'delivery' })}
-                    className={`p-2 rounded border text-sm transition-colors ${customerInfo.orderType === 'delivery' ? 'bg-orange-100 border-orange-500 text-orange-700' : (darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50')}`}
-                  >
-                    <span className="flex items-center gap-2"><Icon name="delivery" size={18} />{t.deliveryType}</span>
-                  </button>
-                )}
-                {(checkoutRestaurant || restaurant)?.accepts_pickup !== false && (
-                  <button
-                    type="button"
-                    onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'pickup' })}
-                    className={`p-2 rounded border text-sm transition-colors ${customerInfo.orderType === 'pickup' ? 'bg-orange-100 border-orange-500 text-orange-700' : (darkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50')}`}
-                  >
-                    <span className="flex items-center gap-2"><Icon name="pickup" size={18} />{t.pickup}</span>
-                  </button>
-                )}
+              <div>
+                <label className="block font-semibold text-[#111111] mb-3">{t.orderType || 'Order Type'}</label>
+                <div className={`grid gap-3 ${
+                  [(checkoutRestaurant || restaurant)?.accepts_dine_in, (checkoutRestaurant || restaurant)?.accepts_delivery, (checkoutRestaurant || restaurant)?.accepts_pickup !== false].filter(Boolean).length === 3 ? 'grid-cols-3' : 
+                  [(checkoutRestaurant || restaurant)?.accepts_dine_in, (checkoutRestaurant || restaurant)?.accepts_delivery, (checkoutRestaurant || restaurant)?.accepts_pickup !== false].filter(Boolean).length === 2 ? 'grid-cols-2' : 'grid-cols-1'
+                }`}>
+                  {(checkoutRestaurant || restaurant)?.accepts_dine_in && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'dine-in' })}
+                      className={`p-4 rounded-xl border-2 text-sm font-semibold transition-all duration-200 flex flex-col items-center gap-2 ${
+                        customerInfo.orderType === 'dine-in' 
+                          ? 'border-[#D4AF37] bg-gradient-to-br from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]' 
+                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                      }`}
+                    >
+                      <Icon name="dineIn" size={20} />
+                      <span>{t.dineIn}</span>
+                    </button>
+                  )}
+                  {(checkoutRestaurant || restaurant)?.accepts_delivery && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'delivery' })}
+                      className={`p-4 rounded-xl border-2 text-sm font-semibold transition-all duration-200 flex flex-col items-center gap-2 ${
+                        customerInfo.orderType === 'delivery' 
+                          ? 'border-[#D4AF37] bg-gradient-to-br from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]' 
+                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                      }`}
+                    >
+                      <Icon name="delivery" size={20} />
+                      <span>{t.deliveryType}</span>
+                    </button>
+                  )}
+                  {(checkoutRestaurant || restaurant)?.accepts_pickup !== false && (
+                    <button
+                      type="button"
+                      onClick={() => setCustomerInfo({ ...customerInfo, orderType: 'pickup' })}
+                      className={`p-4 rounded-xl border-2 text-sm font-semibold transition-all duration-200 flex flex-col items-center gap-2 ${
+                        customerInfo.orderType === 'pickup' 
+                          ? 'border-[#D4AF37] bg-gradient-to-br from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]' 
+                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                      }`}
+                    >
+                      <Icon name="pickup" size={20} />
+                      <span>{t.pickup}</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Conditional Inputs */}
               {customerInfo.orderType === 'dine-in' && (
-                <input
-                  type="text"
-                  placeholder={t.table}
-                  required
-                  className={`w-full`}
-                  style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
-                  value={customerInfo.tableNumber}
-                  onChange={e => setCustomerInfo({ ...customerInfo, tableNumber: e.target.value })}
-                />
+                <div>
+                  <input
+                    type="text"
+                    placeholder={t.table}
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#111111] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400"
+                    value={customerInfo.tableNumber}
+                    onChange={e => setCustomerInfo({ ...customerInfo, tableNumber: e.target.value })}
+                  />
+                </div>
               )}
 
               {customerInfo.orderType === 'delivery' && (
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold">{t.address}</label>
+                <div className="space-y-3">
+                  <label className="block font-semibold text-[#111111]">{t.address}</label>
                   <textarea
                     placeholder={t.addressExample}
                     required
-                    className={`w-full`}
-                    style={{ padding: 14, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#111111] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400 resize-none"
                     rows="4"
                     value={customerInfo.deliveryAddress || ''}
                     onChange={e => setCustomerInfo({ ...customerInfo, deliveryAddress: e.target.value })}
@@ -1538,10 +1596,10 @@ export default function MenuPage({ params }) {
 
               {/* Notes / Details Field */}
               <div>
-                <label className="block text-sm font-bold mb-1">{t.notes}</label>
+                <label className="block font-semibold text-[#111111] mb-2">{t.notes}</label>
                 <textarea
                   placeholder={t.notesPh}
-                  className={`w-full p-2 border rounded ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white'}`}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#111111] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400 resize-none"
                   rows="2"
                   value={customerInfo.notes}
                   onChange={e => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
@@ -1549,21 +1607,21 @@ export default function MenuPage({ params }) {
               </div>
 
               {/* Coupon Section */}
-              <div className="border-t pt-4">
+              <div className="border-t border-gray-100 pt-4">
                 {!showCouponInput && !appliedCoupon ? (
                   <button
                     type="button"
                     onClick={() => setShowCouponInput(true)}
-                    className="text-orange-600 font-bold text-sm hover:underline flex items-center gap-2"
+                    className="text-[#D4AF37] font-semibold text-sm hover:text-[#D4AF37]/80 transition-colors duration-200 flex items-center gap-2"
                   >
                     <Icon name="tag" size={16} />
                     {t.haveCoupon}
                   </button>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {appliedCoupon ? (
-                      <div className="flex justify-between items-center bg-green-50 p-2 rounded border border-green-200">
-                        <span className="text-green-700 font-bold text-sm">
+                      <div className="flex justify-between items-center bg-green-50 p-3 rounded-xl border border-green-200">
+                        <span className="text-green-700 font-semibold text-sm">
                           ✅ {t.discount} {appliedCoupon.discount_percentage}% ({appliedCoupon.code})
                         </span>
                         <button
@@ -1572,7 +1630,7 @@ export default function MenuPage({ params }) {
                             setAppliedCoupon(null)
                             setCouponCode('')
                           }}
-                          className="text-red-500 text-xs font-bold hover:underline"
+                          className="text-red-500 text-sm font-bold hover:text-red-700 transition-colors duration-200"
                         >
                           ✕
                         </button>
@@ -1584,8 +1642,7 @@ export default function MenuPage({ params }) {
                           placeholder={t.couponCode}
                           value={couponCode}
                           onChange={(e) => setCouponCode(e.target.value)}
-                          className={`flex-1`}
-                          style={{ padding: 12, borderRadius: UI_THEME.radii.input, border: `2px solid ${UI_THEME.inputBorder}`, background: UI_THEME.cardBg, color: UI_THEME.text }}
+                          className="flex-1 px-4 py-3 rounded-xl border border-gray-200 bg-white text-[#111111] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] placeholder-gray-400"
                         />
                         <button
                           type="button"
@@ -1600,33 +1657,33 @@ export default function MenuPage({ params }) {
                 )}
               </div>
 
-              {/* طريقة الدفع */}
-              <div className="border-t pt-4">
-                <label className="block font-medium mb-3">{t.paymentMethod} *</label>
-                <div className="space-y-2">
+{/* Payment Method */}
+              <div className="border-t border-gray-100 pt-4">
+                <label className="block font-semibold text-[#111111] mb-3">{t.paymentMethod} *</label>
+                <div className="space-y-3">
                   {(checkoutRestaurant || restaurant)?.accepts_cash !== false && (
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('cash')}
-                    className={`w-full py-3 rounded-lg font-semibold border-2 transition flex items-center justify-center gap-2 ${
-                      paymentMethod === 'cash'
-                        ? 'border-green-600 bg-green-50 text-green-700'
-                        : 'border-gray-300 hover:border-green-400'
-                    }`}
-                  >
-                    <Icon name="cash" size={20} />
-                    <span>{t.cash}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('cash')}
+                      className={`w-full py-4 rounded-xl font-semibold border-2 transition-all duration-200 flex items-center justify-center gap-3 ${
+                        paymentMethod === 'cash'
+                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]'
+                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                      }`}
+                    >
+                      <Icon name="cash" size={20} />
+                      <span>{t.cash}</span>
+                    </button>
                   )}
 
                   {(checkoutRestaurant || restaurant)?.accepts_instapay && (
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('instapay')}
-                      className={`w-full py-3 rounded-lg font-semibold border-2 transition flex items-center justify-center gap-2 ${
+                      className={`w-full py-4 rounded-xl font-semibold border-2 transition-all duration-200 flex items-center justify-center gap-3 ${
                         paymentMethod === 'instapay'
-                          ? 'border-purple-600 bg-purple-50 text-purple-700'
-                          : 'border-gray-300 hover:border-purple-400'
+                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]'
+                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
                       }`}
                     >
                       <Icon name="card" size={20} />
@@ -1638,10 +1695,10 @@ export default function MenuPage({ params }) {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('visa')}
-                      className={`w-full py-3 rounded-lg font-semibold border-2 transition flex items-center justify-center gap-2 ${
+                      className={`w-full py-4 rounded-xl font-semibold border-2 transition-all duration-200 flex items-center justify-center gap-3 ${
                         paymentMethod === 'visa'
-                          ? 'border-blue-600 bg-blue-50 text-blue-700'
-                          : 'border-gray-300 hover:border-blue-400'
+                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]'
+                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
                       }`}
                     >
                       <Icon name="card" size={20} />
@@ -1682,12 +1739,12 @@ export default function MenuPage({ params }) {
               </div>
 
 
-              {paymentMethod === 'cash' && (
-                <div className="bg-yellow-50 p-4 rounded-lg mb-4">
-                  <p className="font-semibold">{t.payment}</p>
-                  <p className="text-sm text-gray-600 mt-1">{t.paymentNote}</p>
-                </div>
-              )}
+                {paymentMethod === 'cash' && (
+                  <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-xl p-4">
+                    <p className="font-semibold text-yellow-800">{t.payment}</p>
+                    <p className="text-sm text-yellow-700 mt-1">{t.paymentNote}</p>
+                  </div>
+                )}
 
               {paymentMethod === 'instapay' && (
                 <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
@@ -1707,23 +1764,28 @@ export default function MenuPage({ params }) {
                 </div>
               )}
 
-              {/* Total Summary before submit */}
-              <div className="flex justify-between items-center font-bold text-lg border-t pt-4 mb-4">
-                <span>{t.grandTotal}</span>
-                <div className="text-right">
-                  {appliedCoupon && <span className="block text-xs text-green-600 font-normal">({t.discount} {appliedCoupon.discount_percentage}%)</span>}
-                  <span>{getCartTotal()} {t.currency}</span>
+                {/* Total Summary before submit */}
+                <div className="flex justify-between items-center font-bold text-lg border-t border-gray-100 pt-4 mb-6">
+                  <span className="text-[#111111]">{t.grandTotal}</span>
+                  <div className="text-right">
+                    {appliedCoupon && <span className="block text-xs text-green-600 font-normal">({t.discount} {appliedCoupon.discount_percentage}%)</span>}
+                    <span className="text-[#D4AF37]">{getCartTotal()} {t.currency}</span>
+                  </div>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                className={`w-full py-4 rounded-lg font-bold text-lg text-white`}
-                style={{ background: UI_THEME.applyBtn, borderRadius: UI_THEME.radii.mainBtn }}
-              >
-                {paymentMethod === 'instapay' ? `💳 ${t.confirm}` : t.confirm}
-              </button>
-              <button type="button" onClick={() => setShowCheckout(false)} className="w-full bg-gray-200 text-gray-800 py-2 rounded-lg">{t.cancel}</button>
+                <button
+                  type="submit"
+                  className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:shadow-lg mb-3"
+                >
+                  {paymentMethod === 'instapay' ? `💳 ${t.confirm}` : t.confirm}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setShowCheckout(false)} 
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-semibold transition-colors duration-200"
+                >
+                  {t.cancel}
+                </button>
             </form>
             )}
           </div>
@@ -1733,18 +1795,22 @@ export default function MenuPage({ params }) {
       {/* Success Modal */}
       {orderSuccess && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm text-center" style={{ background: UI_THEME.cardBg, borderRadius: UI_THEME.radii.card, padding: 24, boxShadow: UI_THEME.shadow, color: UI_THEME.text }}>
-            <div className="text-4xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold mb-2" style={{ color: UI_THEME.text }}>{t.success}</h3>
-            <button onClick={() => setOrderSuccess(false)} className="w-full text-white py-2 mt-4" style={{ background: UI_THEME.primary, borderRadius: UI_THEME.radii.mainBtn, padding: '10px 12px', fontWeight: 600 }}>{t.ok}</button>
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6 text-center">
+            <div className="text-5xl mb-4">🎉</div>
+            <h3 className="text-2xl font-bold mb-4 text-[#111111]">{t.success}</h3>
+            <button 
+              onClick={() => setOrderSuccess(false)} 
+              className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-3 rounded-xl font-bold text-lg transition-all duration-200 hover:shadow-lg mb-3"
+            >
+              {t.ok}
+            </button>
 
             {restaurant?.whatsapp_number && (
               <a
                 href={`https://wa.me/${restaurant.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، أنا ${customerInfo.name}\nأود الاستفسار عن طلبي`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full text-white py-3 rounded-lg font-bold text-lg flex items-center justify-center gap-2 mt-3"
-                style={{ background: '#25D366', borderRadius: UI_THEME.radii.mainBtn }}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-lg"
               >
                 <Icon name="whatsapp" size={18} />
                 {language === 'ar' ? 'تواصل عبر WhatsApp' : (language === 'en' ? 'Contact via WhatsApp' : (language === 'fr' ? 'Contacter via WhatsApp' : (language === 'de' ? 'Kontakt per WhatsApp' : (language === 'ru' ? 'Связаться через WhatsApp' : 'WhatsAppで連絡'))))}
@@ -1754,25 +1820,22 @@ export default function MenuPage({ params }) {
         </div>
       )}
 
-      {/* Added Notification - تختفي عند فتح صفحة الدفع */}
+      {/* Added Notification */}
       {showAddedNotification && !showCheckout && (
-        <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center justify-between gap-4 border transition-colors duration-300 ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center justify-between gap-4 bg-white border border-gray-200">
           <div className="flex items-center gap-3">
             <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">✓</div>
             <div>
-              <p className="font-bold text-sm">{t.cartReady}</p>
-              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              <p className="font-bold text-sm text-[#111111]">{t.cartReady}</p>
+              <p className="text-xs text-gray-500">
                 {getCartTotal()} {t.currency}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                // open cart but keep the added-notification visible
-                setShowCart(true)
-              }}
-              className="bg-orange-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-orange-700 whitespace-nowrap"
+              onClick={() => setShowCart(true)}
+              className="bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] px-4 py-2 rounded-lg font-bold text-sm transition-colors duration-200"
             >
               {t.checkout}
             </button>
@@ -1784,7 +1847,7 @@ export default function MenuPage({ params }) {
 }
 
 // Menu Item Component with Addons
-function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFromCart, cart, darkMode }) {
+function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFromCart, cart }) {
   const [selectedAddons, setSelectedAddons] = useState([])
   const [selectedVariant, setSelectedVariant] = useState(null)
 
@@ -1881,99 +1944,160 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
 
   return (
     <>
-      <div onClick={() => setOpen(true)} role="button" tabIndex={0} className={`lux-card cursor-pointer group ${darkMode ? '' : 'shadow-none'}`}>
+      <div 
+        onClick={() => setOpen(true)} 
+        role="button" 
+        tabIndex={0} 
+        className={`bg-white rounded-2xl p-4 cursor-pointer group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 hover:border-[#D4AF37]/30 ${quantity > 0 ? 'border-[#D4AF37] bg-gradient-to-br from-[#D4AF37]/5 to-[#D4AF37]/10' : ''}`}
+      >
         <div className="flex gap-4">
-          <div className={`w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 relative ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+          <div className="w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 relative bg-gray-100">
             {currentImage ? (
               <img
                 src={getOptimizedImage(currentImage)}
                 alt={name}
                 loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               />
             ) : (
-              <span className="text-4xl text-gray-300">🍽️</span>
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-4xl text-gray-300">🍽️</span>
+              </div>
             )}
           </div>
           <div className="flex-1 flex flex-col justify-between py-1">
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
-                <h3 className="lux-title">{name}</h3>
+                <h3 className="text-lg font-semibold text-[#111111] group-hover:text-[#111111] transition-colors duration-200">{name}</h3>
                 {description && (
-                  <p className={`lux-desc line-clamp-2 ${darkMode ? '' : '!text-gray-900'}`}>{description}</p>
+                  <p className="text-sm text-gray-600 line-clamp-2 mt-1">{description}</p>
                 )}
               </div>
                 <div className="flex flex-col items-end gap-2">
                 {promoDiscount > 0 ? (
                   <div className="text-right">
-                    <div className="text-sm text-gray-300 line-through">{basePrice.toFixed(2)} {t.currency}</div>
-                    <div className="bg-orange-600 text-white px-4 py-1 rounded-full font-bold ml-2">{effectivePrice.toFixed(2)} {t.currency}</div>
+                    <div className="text-sm text-gray-400 line-through">{basePrice.toFixed(2)} {t.currency}</div>
+                    <div className="bg-[#D4AF37] text-[#111111] px-3 py-1 rounded-full font-bold text-sm">
+                      {effectivePrice.toFixed(2)} {t.currency}
+                    </div>
                   </div>
                 ) : (
-                  <span className="bg-orange-600 text-white px-4 py-1 rounded-full font-bold ml-2">
+                  <span className="bg-[#D4AF37] text-[#111111] px-3 py-1 rounded-full font-bold text-sm">
                     {basePrice} {t.currency}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* الأحجام والإضافات مخفية على الكرت؛ تظهر فقط داخل مودال التفاصيل */}
+            {/* Show quantity controls if item is in cart */}
+            {quantity > 0 && (
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleRemoveOne(); }} 
+                    className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200"
+                  >
+                    <span className="text-[#111111] font-bold">-</span>
+                  </button>
+                  <span className="font-semibold text-[#111111] min-w-[2rem] text-center">{quantity}</span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleAddToCart(); }} 
+                    className="w-8 h-8 bg-[#D4AF37] hover:bg-[#D4AF37]/90 rounded-full flex items-center justify-center transition-colors duration-200"
+                  >
+                    <span className="text-[#111111] font-bold">+</span>
+                  </button>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+                  className="text-[#D4AF37] hover:text-[#D4AF37]/80 font-medium text-sm transition-colors duration-200"
+                >
+                  {t.viewDetails || 'View Details'}
+                </button>
+              </div>
+            )}
 
-            {/* Show a single view button on the card; full ordering moved to modal */}
-            <div className="mt-3">
-              <button
-                onClick={(e) => { e.stopPropagation(); setOpen(true) }}
-                className={`ghost-btn w-full`}
-              >
-                {t.viewItem}
-              </button>
-            </div>
+            {quantity === 0 && (
+              <div className="mt-3">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleAddToCart(); }}
+                  className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-2 rounded-xl font-semibold transition-all duration-200 hover:shadow-md"
+                >
+                  {t.addToCart || 'Add to Cart'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
       
       {/* Item Detail Modal */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50" onClick={() => setOpen(false)}>
-          <div className={`w-full max-w-lg rounded-lg p-4 sm:p-6 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-black'} max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="w-full sm:w-36 h-32 sm:h-36 rounded-xl overflow-hidden flex-shrink-0">
-                {currentImage ? <img src={getOptimizedImage(currentImage)} alt={name} loading="lazy" className="w-full h-full object-cover" /> : <span className="text-4xl">🍽️</span>}
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg sm:text-xl font-bold mb-1">{name}</h3>
-                {description && <p className={`text-xs sm:text-sm mb-3 ${darkMode ? 'text-gray-500' : 'text-gray-900'}`}>{description}</p>}
-                <div className="mb-2">
-                  <span className="font-semibold text-sm sm:text-base">{t.sizes}</span>
-                  <div className="flex gap-2 flex-wrap mt-2">
-                    {item.item_variants && item.item_variants.length > 0 ? item.item_variants.map(variant => {
-                      // عرض النص المترجم حسب اللغة
-                      const variantName = language === 'en' && variant.name_en ? variant.name_en 
-                        : language === 'fr' && variant.name_fr ? variant.name_fr 
-                        : language === 'de' && variant.name_de ? variant.name_de 
-                        : language === 'ru' && variant.name_ru ? variant.name_ru 
-                        : language === 'ja' && variant.name_ja ? variant.name_ja 
-                        : variant.name
-                      return (
-                        <button
-                          key={variant.id}
-                          type="button"
-                          onClick={() => setSelectedVariant(variant)}
-                          className={`px-3 py-1 rounded-lg text-sm font-semibold ${selectedVariant?.id === variant.id ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                        >
-                          {variantName} - {variant.price} {t.currency}
-                        </button>
-                      )
-                    }) : <span className="text-sm">{basePrice} {t.currency}</span>}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" onClick={() => setOpen(false)}>
+          <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                  {currentImage ? <img src={getOptimizedImage(currentImage)} alt={name} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><span className="text-3xl">🍽️</span></div>}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold mb-2 text-[#111111]">{name}</h3>
+                  {description && <p className="text-sm text-gray-600 mb-3">{description}</p>}
+                  <div className="text-right">
+                    {promoDiscount > 0 ? (
+                      <div>
+                        <div className="text-sm text-gray-400 line-through">{basePrice.toFixed(2)} {t.currency}</div>
+                        <div className="bg-[#D4AF37] text-[#111111] px-3 py-1 rounded-full font-bold inline-block">
+                          {effectivePrice.toFixed(2)} {t.currency}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="bg-[#D4AF37] text-[#111111] px-3 py-1 rounded-full font-bold">
+                        {basePrice} {t.currency}
+                      </span>
+                    )}
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-4">
+                {item.item_variants && item.item_variants.length > 0 && (
+                  <div>
+                    <label className="block font-semibold text-[#111111] mb-3">{t.sizes}</label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {item.item_variants.map(variant => {
+                        const variantName = language === 'en' && variant.name_en ? variant.name_en 
+                          : language === 'fr' && variant.name_fr ? variant.name_fr 
+                          : language === 'de' && variant.name_de ? variant.name_de 
+                          : language === 'ru' && variant.name_ru ? variant.name_ru 
+                          : language === 'ja' && variant.name_ja ? variant.name_ja 
+                          : variant.name
+                        return (
+                          <button
+                            key={variant.id}
+                            type="button"
+                            onClick={() => setSelectedVariant(variant)}
+                            className={`p-3 rounded-xl border-2 text-sm font-semibold transition-all duration-200 ${
+                              selectedVariant?.id === variant.id 
+                                ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]' 
+                                : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <span>{variantName}</span>
+                              <span className="font-bold">{variant.price} {t.currency}</span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {item.menu_addons && item.menu_addons.length > 0 && (
-                  <div className="mt-3 border-t pt-3">
-                    <p className="text-sm font-semibold mb-2">{item.addons_header ? item.addons_header : t.addons}</p>
+                  <div>
+                    <label className="block font-semibold text-[#111111] mb-3">{item.addons_header ? item.addons_header : t.addons}</label>
                     <div className="space-y-2">
                       {item.menu_addons.map(addon => {
-                        // عرض النص المترجم حسب اللغة
                         const addonName = language === 'en' && addon.name_en ? addon.name_en 
                           : language === 'fr' && addon.name_fr ? addon.name_fr 
                           : language === 'de' && addon.name_de ? addon.name_de 
@@ -1981,12 +2105,17 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
                           : language === 'ja' && addon.name_ja ? addon.name_ja 
                           : addon.name
                         return (
-                          <label key={addon.id} onClick={(e) => e.stopPropagation()} className="flex items-center justify-between p-2 rounded-lg border cursor-pointer">
-                            <div className="flex items-center gap-2">
-                              <input type="checkbox" checked={!!selectedAddons.find(a => a.id === addon.id)} onChange={() => toggleAddon(addon)} />
-                              <span>{addonName}</span>
+                          <label key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-200 cursor-pointer hover:border-[#D4AF37]/50 transition-colors duration-200">
+                            <div className="flex items-center gap-3">
+                              <input 
+                                type="checkbox" 
+                                checked={!!selectedAddons.find(a => a.id === addon.id)} 
+                                onChange={() => toggleAddon(addon)}
+                                className="w-4 h-4 text-[#D4AF37] focus:ring-[#D4AF37] border-gray-300 rounded"
+                              />
+                              <span className="text-[#111111]">{addonName}</span>
                             </div>
-                            <span className="font-bold">+{addon.price} {t.currency}</span>
+                            <span className="font-bold text-[#D4AF37]">+{addon.price} {t.currency}</span>
                           </label>
                         )
                       })}
@@ -1994,13 +2123,28 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
                   </div>
                 )}
 
-                <div className="mt-4 flex items-center gap-3">
-                  <button onClick={() => { handleRemoveOne() }} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition">−</button>
-                  <div className="font-bold text-lg">{quantity}</div>
-                  <button onClick={() => handleAddToCart()} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition">+</button>
-                </div>
-                <div className="mt-4">
-                  <button onClick={() => setOpen(false)} className="ghost-btn prominent">{t.continueShopping}</button>
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => { handleRemoveOne() }} 
+                      className="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200"
+                    >
+                      <span className="text-[#111111] font-bold text-lg">-</span>
+                    </button>
+                    <span className="font-bold text-lg text-[#111111] min-w-[3rem] text-center">{quantity}</span>
+                    <button 
+                      onClick={() => handleAddToCart()} 
+                      className="w-10 h-10 bg-[#D4AF37] hover:bg-[#D4AF37]/90 rounded-full flex items-center justify-center transition-colors duration-200"
+                    >
+                      <span className="text-[#111111] font-bold text-lg">+</span>
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => setOpen(false)} 
+                    className="bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] px-6 py-3 rounded-xl font-semibold transition-all duration-200 hover:shadow-lg"
+                  >
+                    {t.continueShopping}
+                  </button>
                 </div>
               </div>
             </div>
