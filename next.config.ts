@@ -1,20 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Explicit app directory configuration
-  experimental: {
-    appDir: true,
-  },
-
   // Compression
   compress: true,
 
   // Image optimization
   images: {
-    domains: [
-      'supabase.co',
-      'subdomain.supabase.co',
-      'localhost',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
   },
@@ -25,11 +29,6 @@ const nextConfig: NextConfig = {
   // TypeScript strict mode
   typescript: {
     ignoreBuildErrors: false,
-  },
-
-  // ESLint
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 
   // Explicitly set the dist directory

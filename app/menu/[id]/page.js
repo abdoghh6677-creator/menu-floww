@@ -1787,7 +1787,6 @@ export default function MenuPage({ params }) {
                   {t.cancel}
                 </button>
             </form>
-            )}
           </div>
         </div>
       )}
