@@ -1,0 +1,37 @@
+:root {
+  --bg-primary: #0B1220;
+  --bg-card: #111C2E;
+  --bg-soft: #0F172A;
+  --border-color: #1E293B;
+
+  --accent: #C2410C;
+  --accent-hover: #EA580C;
+
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+}
+
+body {
+  background: linear-gradient(180deg, #0F1B2D 0%, #0B1220 100%);
+  font-family: 'Cairo', 'Inter', sans-serif;
+  color: var(--text-primary);
+}
+
+.card {
+  background: var(--bg-card);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+button.primary {
+  background: var(--accent);
+}
+
+button.primary:hover {
+  background: var(--accent-hover);
+}
+
+input, .search {
+  background: var(--bg-soft);
+  border-color: var(--border-color);
+}

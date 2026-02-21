@@ -1,5 +1,6 @@
 
 'use client'
+import './menu-theme.css'
 import { useState, useEffect, use } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
@@ -1806,7 +1807,7 @@ export default function MenuPage({ params }) {
 
             {restaurant?.whatsapp_number && (
               <a
-                href={`https://wa.me/${restaurant.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent(`مرحباً، أنا ${customerInfo.name}\nأود الاستفسار عن طلبي`)}`}
+                href={`https://wa.me/${restaurant.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent('مرحباً، أنا ' + customerInfo.name + '\nأود الاستفسار عن طلبي')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-lg"
