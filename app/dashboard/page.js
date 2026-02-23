@@ -159,7 +159,9 @@ export default function Dashboard() {
     allItems: [],
     categorySales: []
   })
-  const [analyticsRange, setAnalyticsRange] = useState('30_days')
+  const [uploadingItemImage, setUploadingItemImage] = useState(false)
+  const [uploadingCoverImage, setUploadingCoverImage] = useState(false)
+  const [uploadingLogoImage, setUploadingLogoImage] = useState(false)
   const [settings, setSettings] = useState({
     logo_url: '',
     cover_image_url: '',
@@ -212,6 +214,77 @@ export default function Dashboard() {
     }
 
     return { error: { message: 'Failed to update restaurant after removing missing columns' } }
+  }
+
+  // Upload image to Supabase Storage
+  const uploadImage = async (file, bucket = 'menu-images') => {
+    if (!file) return null
+    
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${uuidv4()}.${fileExt}`
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file)
+    
+    if (error) {
+      console.error('Upload error:', error)
+      return null
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName)
+    
+    return publicUrl
+  }
+
+  // Handle menu item image upload
+  const handleItemImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    setUploadingItemImage(true)
+    const url = await uploadImage(file)
+    setUploadingItemImage(false)
+    
+    if (url) {
+      setNewItem({...newItem, image_url: url})
+    } else {
+      alert('فشل في رفع الصورة')
+    }
+  }
+
+  // Handle cover image upload
+  const handleCoverImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    setUploadingCoverImage(true)
+    const url = await uploadImage(file)
+    setUploadingCoverImage(false)
+    
+    if (url) {
+      setSettings({...settings, cover_image_url: url})
+    } else {
+      alert('فشل في رفع الصورة')
+    }
+  }
+
+  // Handle logo image upload
+  const handleLogoImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    setUploadingLogoImage(true)
+    const url = await uploadImage(file)
+    setUploadingLogoImage(false)
+    
+    if (url) {
+      setSettings({...settings, logo_url: url})
+    } else {
+      alert('فشل في رفع الصورة')
+    }
   }
 
   const language = (typeof window !== 'undefined') ? detectLanguage() : 'ar'
@@ -1520,7 +1593,18 @@ async function checkUser() {
                     <input type="text" placeholder="اسم الصنف (日本語)" value={newItem.name_ja} onChange={(e) => setNewItem({...newItem, name_ja: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
                     <input type="number" step="0.01" placeholder="السعر" value={newItem.price} onChange={(e) => setNewItem({...newItem, price: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} required />
                     <div className="flex flex-col gap-2">
-                      <input type="url" placeholder="رابط الصورة الرئيسية" value={newItem.image_url} onChange={(e) => setNewItem({...newItem, image_url: e.target.value})} className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`} />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleItemImageUpload} 
+                        className={`px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-gray-50 border-gray-200 text-black'}`} 
+                      />
+                      {uploadingItemImage && (
+                        <div className="flex items-center gap-2 text-orange-500">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                          جاري رفع الصورة...
+                        </div>
+                      )}
                       {newItem.image_url && (
                         <img src={newItem.image_url} alt="Preview" className="w-full h-32 object-cover rounded-xl bg-gray-100" />
                       )}
@@ -1978,12 +2062,17 @@ async function checkUser() {
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-black'}`}>رابط الشعار (Logo)</label>
                   <input
-                    type="url"
-                    value={settings.logo_url}
-                    onChange={(e) => setSettings({...settings, logo_url: e.target.value})}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoImageUpload}
                     className={`w-full px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-gray-50 border-gray-200 text-black'}`}
-                    placeholder="https://example.com/logo.png"
                   />
+                  {uploadingLogoImage && (
+                    <div className="flex items-center gap-2 text-orange-500 mt-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                      جاري رفع الصورة...
+                    </div>
+                  )}
                   {settings.logo_url && (
                     <div className="mt-3 flex justify-center">
                       <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200 shadow-sm bg-white">
@@ -2001,12 +2090,17 @@ async function checkUser() {
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-black'}`}>صورة الغلاف (Header)</label>
                   <input
-                    type="url"
-                    value={settings.cover_image_url}
-                    placeholder="https://example.com/cover.jpg"
-                    className={`w-full px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`}
-                    onChange={(e) => setSettings({...settings, cover_image_url: e.target.value})}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverImageUpload}
+                    className={`w-full px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white' : 'bg-gray-50 border-gray-200 text-black'}`}
                   />
+                  {uploadingCoverImage && (
+                    <div className="flex items-center gap-2 text-orange-500 mt-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                      جاري رفع الصورة...
+                    </div>
+                  )}
                   {settings.cover_image_url && (
                     <div
                       aria-hidden

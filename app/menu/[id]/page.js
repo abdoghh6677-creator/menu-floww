@@ -1,6 +1,5 @@
 
 'use client'
-import './menu-theme.css'
 import { useState, useEffect, use } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
@@ -1613,9 +1612,9 @@ export default function MenuPage({ params }) {
                   <button
                     type="button"
                     onClick={() => setShowCouponInput(true)}
-                    className="text-[#D4AF37] font-semibold text-sm hover:text-[#D4AF37]/80 transition-colors duration-200 flex items-center gap-2"
+                    className="text-[#D4AF37] font-semibold text-sm hover:text-[#D4AF37] transition-colors duration-200 flex items-center gap-2"
                   >
-                    <Icon name="tag" size={16} />
+                    <span>🏷️</span>
                     {t.haveCoupon}
                   </button>
                 ) : (
@@ -1668,11 +1667,11 @@ export default function MenuPage({ params }) {
                       onClick={() => setPaymentMethod('cash')}
                       className={`w-full py-4 rounded-xl font-semibold border-2 transition-all duration-200 flex items-center justify-center gap-3 ${
                         paymentMethod === 'cash'
-                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]'
-                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37] to-[#D4AF37] text-[#111111]'
+                          : 'border-gray-200 hover:border-[#D4AF37] text-gray-600 hover:text-[#111111]'
                       }`}
                     >
-                      <Icon name="cash" size={20} />
+                      <span>💵</span>
                       <span>{t.cash}</span>
                     </button>
                   )}
@@ -1683,11 +1682,11 @@ export default function MenuPage({ params }) {
                       onClick={() => setPaymentMethod('instapay')}
                       className={`w-full py-4 rounded-xl font-semibold border-2 transition-all duration-200 flex items-center justify-center gap-3 ${
                         paymentMethod === 'instapay'
-                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]'
-                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                          ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37] to-[#D4AF37] text-[#111111]'
+                          : 'border-gray-200 hover:border-[#D4AF37] text-gray-600 hover:text-[#111111]'
                       }`}
                     >
-                      <Icon name="card" size={20} />
+                      <span>💳</span>
                       <span>{t.instapay}</span>
                     </button>
                   )}
@@ -1699,10 +1698,10 @@ export default function MenuPage({ params }) {
                       className={`w-full py-4 rounded-xl font-semibold border-2 transition-all duration-200 flex items-center justify-center gap-3 ${
                         paymentMethod === 'visa'
                           ? 'border-[#D4AF37] bg-gradient-to-r from-[#D4AF37]/10 to-[#D4AF37]/5 text-[#111111]'
-                          : 'border-gray-200 hover:border-[#D4AF37]/50 text-gray-600 hover:text-[#111111]'
+                          : 'border-gray-200 hover:border-[#D4AF37] text-gray-600 hover:text-[#111111]'
                       }`}
                     >
-                      <Icon name="card" size={20} />
+                      <span>💳</span>
                       <span>{t.visa}</span>
                     </button>
                   )}
@@ -1776,7 +1775,7 @@ export default function MenuPage({ params }) {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:shadow-lg mb-3"
+                  className="w-full bg-[#D4AF37] hover:bg-[#D4AF37] text-[#111111] py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:shadow-lg mb-3"
                 >
                   {paymentMethod === 'instapay' ? `💳 ${t.confirm}` : t.confirm}
                 </button>
@@ -1805,7 +1804,7 @@ export default function MenuPage({ params }) {
               {t.ok}
             </button>
 
-            {restaurant?.whatsapp_number && (
+            {/* {restaurant?.whatsapp_number && (
               <a
                 href={`https://wa.me/${restaurant.whatsapp_number.replace(/\D/g, '')}?text=${encodeURIComponent('مرحباً، أنا ' + customerInfo.name + '\nأود الاستفسار عن طلبي')}`}
                 target="_blank"
@@ -1815,7 +1814,7 @@ export default function MenuPage({ params }) {
                 <Icon name="whatsapp" size={18} />
                 {language === 'ar' ? 'تواصل عبر WhatsApp' : (language === 'en' ? 'Contact via WhatsApp' : (language === 'fr' ? 'Contacter via WhatsApp' : (language === 'de' ? 'Kontakt per WhatsApp' : (language === 'ru' ? 'Связаться через WhatsApp' : 'WhatsAppで連絡'))))}
               </a>
-            )}
+            )} */}
           </div>
         </div>
       )}
