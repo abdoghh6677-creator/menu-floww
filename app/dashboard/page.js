@@ -224,35 +224,61 @@ export default function Dashboard() {
     const fileExt = file.name.split('.').pop()
     const fileName = `${uuidv4()}.${fileExt}`
     
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(fileName, file)
-    
-    if (error) {
-      console.error('Upload error:', error)
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file)
+      
+      if (error) {
+        console.error('Upload error:', error)
+        // Provide more specific error messages
+        if (error.message.includes('Bucket not found')) {
+          alert('خطأ: البكت "menu-images" غير موجود في Supabase. يرجى إنشاؤه أولاً.')
+        } else if (error.message.includes('Unauthorized')) {
+          alert('خطأ: غير مصرح لك برفع الصور. تحقق من صلاحيات Supabase.')
+        } else {
+          alert(`فشل في رفع الصورة: ${error.message}`)
+        }
+        return null
+      }
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(fileName)
+      
+      return publicUrl
+    } catch (err) {
+      console.error('Upload exception:', err)
+      alert('حدث خطأ غير متوقع أثناء رفع الصورة')
       return null
     }
-    
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(fileName)
-    
-    return publicUrl
   }
 
   // Handle menu item image upload
   const handleItemImageUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      alert('يرجى اختيار صورة بصيغة JPG، PNG، WebP، أو GIF فقط')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      alert('حجم الصورة يجب أن يكون أقل من 5 ميجابايت')
+      return
+    }
+
     setUploadingItemImage(true)
     const url = await uploadImage(file)
     setUploadingItemImage(false)
     
     if (url) {
       setNewItem({...newItem, image_url: url})
-    } else {
-      alert('فشل في رفع الصورة')
     }
   }
 
@@ -260,15 +286,27 @@ export default function Dashboard() {
   const handleCoverImageUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      alert('يرجى اختيار صورة بصيغة JPG، PNG، WebP، أو GIF فقط')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      alert('حجم الصورة يجب أن يكون أقل من 5 ميجابايت')
+      return
+    }
+
     setUploadingCoverImage(true)
     const url = await uploadImage(file)
     setUploadingCoverImage(false)
     
     if (url) {
       setSettings({...settings, cover_image_url: url})
-    } else {
-      alert('فشل في رفع الصورة')
     }
   }
 
@@ -276,15 +314,27 @@ export default function Dashboard() {
   const handleLogoImageUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
-    
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      alert('يرجى اختيار صورة بصيغة JPG، PNG، WebP، أو GIF فقط')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      alert('حجم الصورة يجب أن يكون أقل من 5 ميجابايت')
+      return
+    }
+
     setUploadingLogoImage(true)
     const url = await uploadImage(file)
     setUploadingLogoImage(false)
     
     if (url) {
       setSettings({...settings, logo_url: url})
-    } else {
-      alert('فشل في رفع الصورة')
     }
   }
 
