@@ -1468,7 +1468,200 @@ export default function MenuPage({ params }) {
         ></div>
       )}
 
-      {/* Checkout Modal - Temporarily removed due to Turbopack build issue */}
+      {/* Checkout Modal */}
+      {showCheckout && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4 bg-black/50">
+            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-gray-200 p-6">
+                <h2 className="text-2xl font-bold text-[#111111]">{t.checkout}</h2>
+                <button
+                  onClick={() => setShowCheckout(false)}
+                  className="text-2xl text-gray-500 hover:text-gray-700"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+                <form onSubmit={handleCheckout} className="space-y-6">
+                  {/* البيانات الشخصية */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-[#111111]">البيانات الشخصية</h3>
+                    <input
+                      type="text"
+                      placeholder="الاسم"
+                      value={customerInfo.name}
+                      onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      required
+                    />
+                    <input
+                      type="tel"
+                      placeholder="رقم الهاتف"
+                      value={customerInfo.phone}
+                      onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      required
+                    />
+                  </div>
+
+                  {/* نوع الطلب */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-[#111111]">نوع الطلب</h3>
+                    <div className="space-y-3">
+                      {restaurant.accepts_dine_in && (
+                        <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="orderType"
+                            value="dine-in"
+                            checked={customerInfo.orderType === 'dine-in'}
+                            onChange={() => setCustomerInfo({...customerInfo, orderType: 'dine-in'})}
+                            className="w-4 h-4"
+                          />
+                          <span className="ml-3">تناول في المطعم</span>
+                        </label>
+                      )}
+                      {restaurant.accepts_delivery && (
+                        <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="orderType"
+                            value="delivery"
+                            checked={customerInfo.orderType === 'delivery'}
+                            onChange={() => setCustomerInfo({...customerInfo, orderType: 'delivery'})}
+                            className="w-4 h-4"
+                          />
+                          <span className="ml-3">توصيل</span>
+                        </label>
+                      )}
+                      {restaurant.accepts_pickup !== false && (
+                        <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="orderType"
+                            value="pickup"
+                            checked={customerInfo.orderType === 'pickup'}
+                            onChange={() => setCustomerInfo({...customerInfo, orderType: 'pickup'})}
+                            className="w-4 h-4"
+                          />
+                          <span className="ml-3">استلام</span>
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* البيانات المتغيرة حسب نوع الطلب */}
+                  {customerInfo.orderType === 'dine-in' && (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">رقم الطاولة</label>
+                      <input
+                        type="text"
+                        placeholder="أدخل رقم الطاولة"
+                        value={customerInfo.tableNumber}
+                        onChange={(e) => setCustomerInfo({...customerInfo, tableNumber: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  {customerInfo.orderType === 'delivery' && (
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">عنوان التوصيل</label>
+                      <textarea
+                        placeholder="أدخل العنوان التفصيلي"
+                        value={customerInfo.deliveryAddress}
+                        onChange={(e) => setCustomerInfo({...customerInfo, deliveryAddress: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                        rows="3"
+                        required
+                      />
+                    </div>
+                  )}
+
+                  {/* ملاحظات */}
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">ملاحظات إضافية (اختياري)</label>
+                    <textarea
+                      placeholder="أي ملاحظات خاصة بطلبك..."
+                      value={customerInfo.notes}
+                      onChange={(e) => setCustomerInfo({...customerInfo, notes: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                      rows="2"
+                    />
+                  </div>
+
+                  {/* طرق الدفع */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-[#111111]">طريقة الدفع</h3>
+                    <div className="space-y-3">
+                      {restaurant.accepts_cash && (
+                        <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="cash"
+                            checked={paymentMethod === 'cash'}
+                            onChange={() => setPaymentMethod('cash')}
+                            className="w-4 h-4"
+                          />
+                          <span className="ml-3">💵 دفع عند الاستلام</span>
+                        </label>
+                      )}
+                      {restaurant.accepts_instapay && (
+                        <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="instapay"
+                            checked={paymentMethod === 'instapay'}
+                            onChange={() => setPaymentMethod('instapay')}
+                            className="w-4 h-4"
+                          />
+                          <span className="ml-3">🔐 الدفع الإلكتروني (InstaPay)</span>
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* الملخص */}
+                  <div className="border-t border-gray-200 pt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">عدد الأصناف:</span>
+                      <span className="font-semibold">{cart.length} صنف</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>الإجمالي:</span>
+                      <span className="text-[#D4AF37]">{getCartTotal()} {t.currency}</span>
+                    </div>
+                  </div>
+
+                  {/* الأزرار */}
+                  <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setShowCheckout(false)}
+                      className="flex-1 px-6 py-3 border border-gray-300 rounded-lg text-[#111111] font-bold hover:bg-gray-50 transition-colors"
+                    >
+                      إلغاء
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 px-6 py-3 bg-[#D4AF37] text-[#111111] rounded-lg font-bold hover:bg-[#D4AF37]/90 transition-colors"
+                    >
+                      تأكيد الطلب ✓
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Success Modal */}
       {orderSuccess && (
@@ -1512,7 +1705,10 @@ export default function MenuPage({ params }) {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowCart(true)}
+              onClick={() => {
+                setShowCart(true)
+                setShowAddedNotification(false)
+              }}
               className="bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] px-4 py-2 rounded-lg font-bold text-sm transition-colors duration-200"
             >
               {t.checkout}
