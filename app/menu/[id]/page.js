@@ -1263,7 +1263,9 @@ export default function MenuPage({ params }) {
         className="absolute inset-0 w-full h-full object-cover"
         style={{ 
           backfaceVisibility: 'hidden',
-          willChange: 'transform'
+          willChange: 'transform',
+          filter: 'blur(0px)',
+          transition: 'filter 0.3s ease'
         }}
         sizes="100vw"
         srcSet={`
@@ -1271,6 +1273,8 @@ export default function MenuPage({ params }) {
           ${getOptimizedImage(restaurant.cover_image_url, { w: 960, q: 80 })} 960w,
           ${getOptimizedImage(restaurant.cover_image_url, { w: 1280, q: 80 })} 1280w
         `}
+        placeholder="blur"
+        onLoad={e => { e.target.style.filter = 'none'; }}
       />
     ) : (
       <div className="absolute inset-0 bg-gradient-to-br from-[#111111] to-[#2a2a2a]"></div>
@@ -1560,10 +1564,10 @@ export default function MenuPage({ params }) {
                 <form onSubmit={handleCheckout} className="space-y-6">
                   {/* البيانات الشخصية */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#111111]">{t.personalData || 'البيانات الشخصية'}</h3>
+                    <h3 className="text-lg font-bold text-[#111111]">{t.personalData}</h3>
                     <input
                       type="text"
-                      placeholder="الاسم"
+                      placeholder={t.name}
                       value={customerInfo.name}
                       onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
@@ -1571,7 +1575,7 @@ export default function MenuPage({ params }) {
                     />
                     <input
                       type="tel"
-                      placeholder="رقم الهاتف"
+                      placeholder={t.phone}
                       value={customerInfo.phone}
                       onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
@@ -1581,7 +1585,7 @@ export default function MenuPage({ params }) {
 
                   {/* نوع الطلب */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#111111]">{t.orderTypeHeader || 'نوع الطلب'}</h3>
+                    <h3 className="text-lg font-bold text-[#111111]">{t.orderTypeHeader}</h3>
                     <div className="space-y-3">
                       {restaurant.accepts_dine_in && (
                         <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
@@ -1593,7 +1597,7 @@ export default function MenuPage({ params }) {
                             onChange={() => setCustomerInfo({...customerInfo, orderType: 'dine-in'})}
                             className="w-4 h-4"
                           />
-                          <span className="ml-3">تناول في المطعم</span>
+                          <span className="ml-3">{t.dineIn}</span>
                         </label>
                       )}
                       {restaurant.accepts_delivery && (
@@ -1606,7 +1610,7 @@ export default function MenuPage({ params }) {
                             onChange={() => setCustomerInfo({...customerInfo, orderType: 'delivery'})}
                             className="w-4 h-4"
                           />
-                          <span className="ml-3">توصيل</span>
+                          <span className="ml-3">{t.deliveryType}</span>
                         </label>
                       )}
                       {restaurant.accepts_pickup !== false && (
@@ -1619,7 +1623,7 @@ export default function MenuPage({ params }) {
                             onChange={() => setCustomerInfo({...customerInfo, orderType: 'pickup'})}
                             className="w-4 h-4"
                           />
-                          <span className="ml-3">استلام</span>
+                          <span className="ml-3">{t.pickup}</span>
                         </label>
                       )}
                     </div>
@@ -1628,10 +1632,10 @@ export default function MenuPage({ params }) {
                   {/* البيانات المتغيرة حسب نوع الطلب */}
                   {customerInfo.orderType === 'dine-in' && (
                     <div>
-                      <label className="block text-sm font-semibold mb-2">رقم الطاولة</label>
+                      <label className="block text-sm font-semibold mb-2">{t.table}</label>
                       <input
                         type="text"
-                        placeholder="أدخل رقم الطاولة"
+                        placeholder={t.table}
                         value={customerInfo.tableNumber}
                         onChange={(e) => setCustomerInfo({...customerInfo, tableNumber: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
@@ -1642,9 +1646,9 @@ export default function MenuPage({ params }) {
 
                   {customerInfo.orderType === 'delivery' && (
                     <div>
-                      <label className="block text-sm font-semibold mb-2">عنوان التوصيل</label>
+                      <label className="block text-sm font-semibold mb-2">{t.address}</label>
                       <textarea
-                        placeholder="أدخل العنوان التفصيلي"
+                        placeholder={t.addressExample}
                         value={customerInfo.deliveryAddress}
                         onChange={(e) => setCustomerInfo({...customerInfo, deliveryAddress: e.target.value})}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
@@ -1656,9 +1660,9 @@ export default function MenuPage({ params }) {
 
                   {/* ملاحظات */}
                   <div>
-                    <label className="block text-sm font-semibold mb-2">ملاحظات إضافية (اختياري)</label>
+                    <label className="block text-sm font-semibold mb-2">{t.notes}</label>
                     <textarea
-                      placeholder="أي ملاحظات خاصة بطلبك..."
+                      placeholder={t.notesPh}
                       value={customerInfo.notes}
                       onChange={(e) => setCustomerInfo({...customerInfo, notes: e.target.value})}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
@@ -1668,7 +1672,7 @@ export default function MenuPage({ params }) {
 
                   {/* طرق الدفع */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#111111]">{t.paymentMethodHeader || 'طريقة الدفع'}</h3>
+                    <h3 className="text-lg font-bold text-[#111111]">{t.paymentMethodHeader}</h3>
                     <div className="space-y-3">
                       {restaurant.accepts_cash && (
                         <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
@@ -1680,7 +1684,7 @@ export default function MenuPage({ params }) {
                             onChange={() => setPaymentMethod('cash')}
                             className="w-4 h-4"
                           />
-                          <span className="ml-3">💵 دفع عند الاستلام</span>
+                          <span className="ml-3">💵 {t.cash}</span>
                         </label>
                       )}
                       {restaurant.accepts_instapay && (
@@ -1693,7 +1697,7 @@ export default function MenuPage({ params }) {
                             onChange={() => setPaymentMethod('instapay')}
                             className="w-4 h-4"
                           />
-                          <span className="ml-3">🔐 الدفع الإلكتروني (InstaPay)</span>
+                          <span className="ml-3">🔐 {t.instapay}</span>
                         </label>
                       )}
                     </div>
