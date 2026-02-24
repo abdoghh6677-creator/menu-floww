@@ -1436,38 +1436,78 @@ export default function MenuPage({ params }) {
                 <p className="text-gray-500 text-lg">{t.emptyCart}</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {cart.map(item => (
-                  <div key={item.cartId} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-[#111111]">
-                          {item.quantity > 1 && <span className="text-[#D4AF37] mr-2">{item.quantity}x</span>}
-                          {item.name}
-                        </h4>
-                        {item.selectedVariant && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            {t.size || 'Size'}: {item.selectedVariant.name}
-                          </p>
-                        )}
-                        {item.selectedAddons.length > 0 && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            + {item.selectedAddons.map(a => a.name).join(', ')}
-                          </p>
-                        )}
+              <div className="space-y-3">
+                {cart.map(item => {
+                  // Skip addon items as they are shown grouped with their parent
+                  if (item.isAddon) return null
+                  
+                  // Get all addons related to this main item
+                  const relatedAddons = cart.filter(a => a.isAddon && a.parentCartId === item.cartId)
+                  
+                  return (
+                    <div key={item.cartId} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 sm:p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start gap-2 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {item.quantity > 1 && (
+                              <span className="inline-flex items-center justify-center bg-[#D4AF37] text-[#111111] text-xs font-bold rounded-full w-5 h-5 sm:w-6 sm:h-6">
+                                {item.quantity}
+                              </span>
+                            )}
+                            <h4 className="font-semibold text-[#111111] text-sm sm:text-base break-words">
+                              {item.name}
+                            </h4>
+                          </div>
+                          
+                          {/* Variant Badge */}
+                          {item.selectedVariant && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              <span className="inline-block bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full font-medium">
+                                📏 {item.selectedVariant.name}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Addons Badges */}
+                          {(item.selectedAddons.length > 0 || relatedAddons.length > 0) && (
+                            <div className="mt-2 flex flex-wrap gap-1">
+                              {item.selectedAddons.map((addon, idx) => (
+                                <span 
+                                  key={`sa-${idx}`} 
+                                  className="inline-block bg-emerald-100 text-emerald-700 text-xs px-2 py-1 rounded-full font-medium break-words"
+                                >
+                                  ➕ {addon.name}
+                                </span>
+                              ))}
+                              {relatedAddons.map((addon) => (
+                                <span 
+                                  key={addon.cartId} 
+                                  className="inline-block bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full font-medium break-words"
+                                >
+                                  🎁 {addon.name.replace(' (إضافة)', '')}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Remove Button */}
+                        <button
+                          onClick={() => removeFromCart(item.cartId)}
+                          className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full hover:bg-red-200 transition-colors duration-200 bg-red-50"
+                        >
+                          <span className="text-red-600 text-lg font-bold leading-none">×</span>
+                        </button>
                       </div>
-                      <button
-                        onClick={() => removeFromCart(item.cartId)}
-                        className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-100 transition-colors duration-200 ml-2"
-                      >
-                        <span className="text-red-500 text-sm font-bold">×</span>
-                      </button>
+                      
+                      {/* Price Row */}
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                        <span className="text-xs text-gray-500">{item.totalPrice} {t.currency}</span>
+                        <span className="text-[#D4AF37] font-bold text-sm">{item.quantity} x {item.totalPrice} = {(item.totalPrice * item.quantity).toFixed(2)} {t.currency}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[#D4AF37] font-bold">{item.totalPrice} {t.currency}</span>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -1520,7 +1560,7 @@ export default function MenuPage({ params }) {
                 <form onSubmit={handleCheckout} className="space-y-6">
                   {/* البيانات الشخصية */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#111111]">البيانات الشخصية</h3>
+                    <h3 className="text-lg font-bold text-[#111111]">{t.personalData || 'البيانات الشخصية'}</h3>
                     <input
                       type="text"
                       placeholder="الاسم"
@@ -1541,7 +1581,7 @@ export default function MenuPage({ params }) {
 
                   {/* نوع الطلب */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#111111]">نوع الطلب</h3>
+                    <h3 className="text-lg font-bold text-[#111111]">{t.orderTypeHeader || 'نوع الطلب'}</h3>
                     <div className="space-y-3">
                       {restaurant.accepts_dine_in && (
                         <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
@@ -1628,7 +1668,7 @@ export default function MenuPage({ params }) {
 
                   {/* طرق الدفع */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-[#111111]">طريقة الدفع</h3>
+                    <h3 className="text-lg font-bold text-[#111111]">{t.paymentMethodHeader || 'طريقة الدفع'}</h3>
                     <div className="space-y-3">
                       {restaurant.accepts_cash && (
                         <label className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
