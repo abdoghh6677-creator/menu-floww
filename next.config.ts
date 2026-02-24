@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
       },
     ],
     formats: ['image/avif', 'image/webp'],
+    deviceSizes: [320, 420, 640, 960, 1280, 1536],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
   // Output configuration for Vercel
@@ -36,6 +38,30 @@ const nextConfig: NextConfig = {
 
   // Ensure the app directory is recognized
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
+
+  // HTTP Headers for performance
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=86400'
+          }
+        ]
+      },
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, stale-while-revalidate=600'
+          }
+        ]
+      }
+    ]
+  }
 };
 
 export default nextConfig;

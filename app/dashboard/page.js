@@ -9,6 +9,7 @@ import PlanManagement from '@/components/PlanManagement'
 import PrintInvoice from '@/components/PrintInvoice'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { translations as paymentTranslations, detectLanguage } from '@/lib/translations'
+import { getOptimizedImage, preloadImage, batchPreloadImages } from '@/lib/imageHelpers'
 
 // 🔊 دالة لتشغيل صوت الإشعار
 const playNotificationSound = () => {
@@ -166,8 +167,6 @@ export default function Dashboard() {
   const [settings, setSettings] = useState({
     logo_url: '',
     cover_image_url: '',
-    working_hours: '',
-    is_open: false,
     delivery_fee: 0,
     accepts_delivery: true,
     accepts_dine_in: true,
@@ -444,8 +443,6 @@ export default function Dashboard() {
         setSettings({
           logo_url: restaurant.logo_url || '',
           cover_image_url: restaurant.cover_image_url || '',
-          working_hours: restaurant.working_hours || '',
-          is_open: restaurant.is_open,
           delivery_fee: restaurant.delivery_fee || 0,
           accepts_delivery: paymentSettings.accepts_delivery ?? restaurant.accepts_delivery ?? true,
           accepts_dine_in: paymentSettings.accepts_dine_in ?? restaurant.accepts_dine_in ?? true,
@@ -1219,8 +1216,6 @@ async function checkUser() {
     const settingsToSave = {
       logo_url: settings.logo_url,
       cover_image_url: settings.cover_image_url,
-      working_hours: settings.working_hours,
-      is_open: settings.is_open,
       delivery_fee: parseFloat(settings.delivery_fee) || 0
     ,instapay_link: settings.instapay_link || null
     ,instapay_receipt_number: settings.instapay_receipt_number || null
@@ -1320,8 +1315,10 @@ async function checkUser() {
           <div className="flex items-center gap-3">
             {restaurant?.logo_url && (
               <img 
-                src={restaurant.logo_url} 
+                src={getOptimizedImage(restaurant.logo_url, { w: 40, q: 85 })}
                 alt="Logo" 
+                loading="eager"
+                fetchPriority="high"
                 className="w-10 h-10 rounded-full object-cover border-2 border-orange-500 shadow-sm"
               />
             )}
@@ -1846,9 +1843,16 @@ async function checkUser() {
                     <div className={`w-full h-48 rounded-2xl mb-4 flex items-center justify-center overflow-hidden relative ${darkMode ? 'bg-slate-700' : 'bg-slate-50'}`}>
                       {item.image_url ? (
                         <img
-                          src={item.image_url}
+                          src={getOptimizedImage(item.image_url, { w: 400, q: 85 })}
                           alt={item.name}
+                          loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          srcSet={`
+                            ${getOptimizedImage(item.image_url, { w: 200, q: 85 })} 200w,
+                            ${getOptimizedImage(item.image_url, { w: 400, q: 85 })} 400w,
+                            ${getOptimizedImage(item.image_url, { w: 600, q: 85 })} 600w
+                          `}
                         />
                       ) : (
                         <span className="text-4xl text-gray-300">🍽️</span>
@@ -2164,29 +2168,6 @@ async function checkUser() {
                   </p>
                 </div>
 
-                {/* مواعيد العمل */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-black'}`}>مواعيد العمل</label>
-                  <input
-                    type="text"
-                    value={settings.working_hours}
-                    placeholder="من 10 صباحاً حتى 12 منتصف الليل"
-                    className={`w-full px-4 py-3 border rounded-xl outline-none transition focus:ring-2 focus:ring-orange-500 ${darkMode ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-500'}`}
-                    onChange={(e) => setSettings({...settings, working_hours: e.target.value})}
-                  />
-                </div>
-
-                {/* حالة المطعم */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="is_open"
-                    checked={settings.is_open}
-                    onChange={(e) => setSettings({...settings, is_open: e.target.checked})}
-                    className="w-5 h-5"
-                  />
-                  <label htmlFor="is_open" className={`font-semibold ${darkMode ? 'text-gray-200' : 'text-black'}`}>المطعم مفتوح الآن</label>
-                </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-black'}`}>رسوم التوصيل</label>
                   <input

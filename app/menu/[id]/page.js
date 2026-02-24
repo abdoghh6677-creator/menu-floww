@@ -6,7 +6,7 @@ import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { supabase } from '@/lib/supabase'
 import translationsFallback, { detectLanguage } from '@/lib/translations'
 import BillSplitter from '@/components/BillSplitter'
-import { getOptimizedImage } from '@/lib/imageHelpers'
+import { getOptimizedImage, preloadImage, batchPreloadImages, getBlurredImage } from '@/lib/imageHelpers'
 
 // load themes lazily to keep initial bundle small
 
@@ -549,6 +549,29 @@ export default function MenuPage({ params }) {
         const itemsWithPromo = itemsData.filter(item => item.has_promotion && item.promotion_discount)
         if (itemsWithPromo.length > 0) {
           setTimeout(() => setShowPromoAlert(true), 500)
+        }
+      }
+
+      // 📸 تحميل الصور مسبقاً (Preload images)
+      if (restaurantData && (restaurantData.cover_image_url || restaurantData.logo_url)) {
+        const imagesToPreload = []
+        if (restaurantData.cover_image_url) imagesToPreload.push(restaurantData.cover_image_url)
+        if (restaurantData.logo_url) imagesToPreload.push(restaurantData.logo_url)
+        
+        // تحميل الصور الأساسية بأولوية عالية
+        batchPreloadImages(imagesToPreload, 'high')
+      }
+
+      // تحميل صور الأصناف الأولى مسبقاً
+      if (itemsData && itemsData.length > 0) {
+        const topItemImages = itemsData.slice(0, 6)
+          .filter(item => item.image_url)
+          .map(item => item.image_url)
+        
+        if (topItemImages.length > 0) {
+          setTimeout(() => {
+            batchPreloadImages(topItemImages, 'low')
+          }, 500)
         }
       }
     } catch (e) {
@@ -1142,10 +1165,16 @@ export default function MenuPage({ params }) {
             </button>
             {currentPromo.image_url && (
               <img
-                src={currentPromo.image_url}
+                src={getOptimizedImage(currentPromo.image_url, { w: 600, q: 85 })}
                 alt={currentPromo.title}
                 loading="lazy"
                 className="w-full h-48 object-cover rounded-lg mb-6"
+                sizes="(max-width: 640px) 100vw, 500px"
+                srcSet={`
+                  ${getOptimizedImage(currentPromo.image_url, { w: 300, q: 85 })} 300w,
+                  ${getOptimizedImage(currentPromo.image_url, { w: 600, q: 85 })} 600w,
+                  ${getOptimizedImage(currentPromo.image_url, { w: 900, q: 85 })} 900w
+                `}
               />
             )}
             <h2 className="text-4xl font-bold mb-4">
@@ -1227,10 +1256,21 @@ export default function MenuPage({ params }) {
       <div className="relative h-72">
     {restaurant.cover_image_url ? (
       <img
-        src={getOptimizedImage(restaurant.cover_image_url)}
+        src={getOptimizedImage(restaurant.cover_image_url, { w: 1280, q: 80 })}
         alt={restaurant.name}
-        loading="lazy"
+        loading="eager"
+        fetchPriority="high"
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ 
+          backfaceVisibility: 'hidden',
+          willChange: 'transform'
+        }}
+        sizes="100vw"
+        srcSet={`
+          ${getOptimizedImage(restaurant.cover_image_url, { w: 640, q: 80 })} 640w,
+          ${getOptimizedImage(restaurant.cover_image_url, { w: 960, q: 80 })} 960w,
+          ${getOptimizedImage(restaurant.cover_image_url, { w: 1280, q: 80 })} 1280w
+        `}
       />
     ) : (
       <div className="absolute inset-0 bg-gradient-to-br from-[#111111] to-[#2a2a2a]"></div>
@@ -1240,37 +1280,28 @@ export default function MenuPage({ params }) {
 
   {/* Content */}
   <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-    {/* Status - Right */}
-    <div className="absolute top-4 right-4 z-20">
-      <span className={`px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-md ${
-        restaurant.is_open 
-          ? 'bg-[#D4AF37] text-[#111111]' 
-          : 'bg-red-500/90 text-white'
-      }`}>
-        {restaurant.is_open ? '🟢 مفتوح' : '🔴 مغلق'}
-      </span>
-    </div>
 
-    {/* Hours - Left */}
-    <div className="absolute top-4 left-4 z-20">
-      <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-2 rounded-full text-white border border-white/10">
-        <span className="text-lg">🕐</span>
-        <span className="font-semibold text-xs md:text-sm">
-          {restaurant.working_hours || '10 ص - 12 م'}
-        </span>
-      </div>
-    </div>
 
     {/* Center: Logo & Name */}
     <div className="flex flex-col items-center z-10">
       <div className="bg-white p-1 rounded-full shadow-2xl mb-2 sm:mb-4 w-20 h-20 sm:w-32 sm:h-32 flex items-center justify-center overflow-hidden border-4 border-[#D4AF37]/30">
         {restaurant.logo_url ? (
           <img 
-            src={restaurant.logo_url} 
+            src={getOptimizedImage(restaurant.logo_url, { w: 256, q: 85 })} 
             alt={restaurant.name}
-            loading="lazy"
+            loading="eager"
+            fetchPriority="high"
             className="w-full h-full object-cover rounded-full"
-            style={{ imageRendering: 'high-quality' }}
+            style={{ 
+              imageRendering: 'high-quality',
+              backfaceVisibility: 'hidden'
+            }}
+            sizes="(max-width: 640px) 80px, 128px"
+            srcSet={`
+              ${getOptimizedImage(restaurant.logo_url, { w: 80, q: 85 })} 80w,
+              ${getOptimizedImage(restaurant.logo_url, { w: 128, q: 85 })} 128w,
+              ${getOptimizedImage(restaurant.logo_url, { w: 256, q: 85 })} 256w
+            `}
           />
         ) : (
           <span className="text-3xl sm:text-6xl">🍽️</span>
@@ -1828,10 +1859,16 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
           <div className="w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 relative bg-gray-100">
             {currentImage ? (
               <img
-                src={getOptimizedImage(currentImage)}
+                src={getOptimizedImage(currentImage, { w: 224, q: 85 })}
                 alt={name}
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                sizes="112px"
+                srcSet={`
+                  ${getOptimizedImage(currentImage, { w: 112, q: 85 })} 112w,
+                  ${getOptimizedImage(currentImage, { w: 224, q: 85 })} 224w,
+                  ${getOptimizedImage(currentImage, { w: 448, q: 85 })} 448w
+                `}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -1911,7 +1948,7 @@ function MenuItem({ item, language, t, onAddToCart, onAddAddonsOnly, onRemoveFro
             <div className="p-6">
               <div className="flex items-start gap-4 mb-4">
                 <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                  {currentImage ? <img src={getOptimizedImage(currentImage)} alt={name} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><span className="text-3xl">🍽️</span></div>}
+                  {currentImage ? <img src={getOptimizedImage(currentImage, { w: 200, q: 85 })} alt={name} loading="lazy" className="w-full h-full object-cover" sizes="96px" srcSet={`${getOptimizedImage(currentImage, { w: 96, q: 85 })} 96w, ${getOptimizedImage(currentImage, { w: 200, q: 85 })} 200w`} /> : <div className="w-full h-full flex items-center justify-center"><span className="text-3xl">🍽️</span></div>}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-2 text-[#111111]">{name}</h3>
