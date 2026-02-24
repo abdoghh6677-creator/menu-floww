@@ -1,11 +1,11 @@
 :root {
-  --bg-primary: #0B1220;
-  --bg-card: #111C2E;
-  --bg-soft: #0F172A;
+  --bg-primary: #010102;
+  --bg-card: #000000;
+  --bg-soft: #000000;
   --border-color: #1E293B;
 
-  --accent: #C2410C;
-  --accent-hover: #EA580C;
+  --accent: #1a1615;
+  --accent-hover: #1eb04a;
 
   --text-primary: #FFFFFF;
   --text-secondary: #CBD5E1;
@@ -20,7 +20,7 @@ body {
 
 .card {
   background: var(--bg-card);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
 button.primary {

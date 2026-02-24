@@ -159,6 +159,7 @@ export default function Dashboard() {
     allItems: [],
     categorySales: []
   })
+  const [analyticsRange, setAnalyticsRange] = useState('30_days')
   const [uploadingItemImage, setUploadingItemImage] = useState(false)
   const [uploadingCoverImage, setUploadingCoverImage] = useState(false)
   const [uploadingLogoImage, setUploadingLogoImage] = useState(false)
