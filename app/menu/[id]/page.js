@@ -1449,12 +1449,6 @@ export default function MenuPage({ params }) {
                 <span className="text-[#D4AF37]">{getCartTotal()} {t.currency}</span>
               </div>
               
-              {/* Ready indicator */}
-              <div className="flex items-center justify-center gap-2 mb-4 p-3 bg-green-50 rounded-xl border border-green-200">
-                <div className="text-green-600 text-xl">✅</div>
-                <p className="text-green-800 font-semibold text-sm">{t.cartReady}</p>
-              </div>
-              
               <button 
                 onClick={() => { setShowCart(false); openCheckout(); }}
                 className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-4 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all duration-200 hover:shadow-lg"
