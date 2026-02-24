@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Run the SQL migration file to add translation columns.
 // Usage: set DATABASE_URL env var (Postgres connection string) then run:
 // node scripts/run_translation_migration.js
