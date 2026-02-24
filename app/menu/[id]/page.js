@@ -1384,10 +1384,10 @@ export default function MenuPage({ params }) {
       </div>
 
       {/* Cart Sliding Drawer */}
-      <div className={`fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${showCart ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-white shadow-2xl transform transition-transform duration-300 ease-in-out ${showCart ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex flex-col h-full">
           {/* Cart Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-100">
             <h3 className="text-xl font-bold text-[#111111]">{t.cart}</h3>
             <button 
               onClick={() => setShowCart(false)}
@@ -1398,7 +1398,7 @@ export default function MenuPage({ params }) {
           </div>
 
           {/* Cart Content */}
-          <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {cart.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="text-6xl mb-4">🛒</div>
@@ -1443,14 +1443,21 @@ export default function MenuPage({ params }) {
 
           {/* Cart Footer */}
           {cart.length > 0 && (
-            <div className="border-t border-gray-100 p-6">
+            <div className="border-t border-gray-100 p-4 sm:p-6">
               <div className="flex justify-between items-center font-bold text-lg mb-4">
                 <span className="text-[#111111]">{t.total}</span>
                 <span className="text-[#D4AF37]">{getCartTotal()} {t.currency}</span>
               </div>
+              
+              {/* Ready indicator */}
+              <div className="flex items-center justify-center gap-2 mb-4 p-3 bg-green-50 rounded-xl border border-green-200">
+                <div className="text-green-600 text-xl">✅</div>
+                <p className="text-green-800 font-semibold text-sm">{t.cartReady}</p>
+              </div>
+              
               <button 
                 onClick={() => { setShowCart(false); openCheckout(); }}
-                className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:shadow-lg"
+                className="w-full bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-[#111111] py-4 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all duration-200 hover:shadow-lg"
               >
                 {t.checkout}
               </button>
