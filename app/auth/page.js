@@ -81,13 +81,20 @@ function AuthContent() {
 
         // إضافة مطعم جديد بعد إنشاء الحساب
         if (authData?.user) {
+          // توليد slug من اسم المطعم
+          const slug = cleanRestaurantName
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9\-\u0600-\u06FF]/g, '') // يدعم العربية
+
           const { error: restError } = await supabase
             .from('restaurants')
             .insert([
               {
                 name: cleanRestaurantName,
                 user_id: authData.user.id,
-                is_open: true
+                is_open: true,
+                slug
               }
             ])
           if (restError) {

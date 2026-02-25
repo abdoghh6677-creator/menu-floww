@@ -1358,7 +1358,7 @@ async function checkUser() {
               {darkMode ? '☀️' : '🌙'}
             </button>
             <a
-              href={`/menu/${restaurant?.id}`}
+              href={`/menu/${restaurant?.slug}`}
               target="_blank"
               className="bg-gradient-to-r from-blue-600 to-blue-500 text-white px-5 py-2 rounded-xl font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95"
             >
@@ -2379,7 +2379,7 @@ async function checkUser() {
                     <img src={restaurant.qr_code_url} alt="QR Code" className="w-full max-w-xs mx-auto" />
                   ) : (
                     <QRCodeCanvas
-                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/menu/${restaurant.id}`}
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/menu/${restaurant.slug}`}
                       size={300}
                       level="H"
                       includeMargin={true}
@@ -2390,7 +2390,7 @@ async function checkUser() {
 
                 <div className="space-y-2">
                   <a
-                    href={restaurant.qr_code_url || `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent((typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant.id)}`}
+                    href={restaurant.qr_code_url || `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent((typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant.slug)}`}
                     download={`${restaurant.name}-QR.png`}
                     target="_blank"
                     className="block w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700"
@@ -2400,7 +2400,7 @@ async function checkUser() {
                   
                   <button
                     onClick={() => {
-                      const qrUrl = restaurant.qr_code_url || `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent((typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant.id)}`
+                      const qrUrl = restaurant.qr_code_url || `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent((typeof window !== 'undefined' ? window.location.origin : '') + '/menu/' + restaurant.slug)}`
                       window.open(qrUrl, '_blank')
                     }}
                     className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700"
