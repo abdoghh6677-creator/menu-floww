@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { supabase } from '@/lib/supabase'
-import translationsFallback, { detectLanguage } from '@/lib/translations'
+import translationsFallback, { detectLanguage } from '@/lib/menuTranslations'
 import BillSplitter from '@/components/BillSplitter'
 import { getOptimizedImage, preloadImage, batchPreloadImages, getBlurredImage } from '@/lib/imageHelpers'
 
