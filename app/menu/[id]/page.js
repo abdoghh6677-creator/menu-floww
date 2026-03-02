@@ -1,6 +1,6 @@
-
-'use client'
-import { useState, useEffect, use } from 'react'
+// ISR enabled: Server Component
+export const revalidate = 60;
+import { use } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { notifyRestaurantOwner } from '@/lib/whatsapp'
 import { supabase } from '@/lib/supabase'
@@ -36,172 +36,29 @@ export default function MenuPage({ params }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(20)
   const [paymentMethod, setPaymentMethod] = useState('cash')
-  const [showInstaPayModal, setShowInstaPayModal] = useState(false)
-  const [showRating, setShowRating] = useState(false)
-  const [lastOrderId, setLastOrderId] = useState(null)
-  const [ratingValue, setRatingValue] = useState(5)
-  const [ratingFeedback, setRatingFeedback] = useState('')
-  const [showAddedNotification, setShowAddedNotification] = useState(false)
-  const [theme, setTheme] = useState(null)
-  const [themesState, setThemesState] = useState(null)
-  const [showCouponInput, setShowCouponInput] = useState(false)
-  const [couponCode, setCouponCode] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  export default async function MenuPage({ params }) {
+    const { id } = params;
+    // هنا يجب جلب بيانات المطعم والمنيو من Supabase مباشرة (SSR/ISR)
+    // مثال:
+    const { createClient } = await import('@/lib/supabaseClient');
+    const supabase = createClient();
+    const { data: restaurant } = await supabase.from('restaurants').select('*').eq('id', id).single();
+    const { data: menuItems } = await supabase.from('menu_items').select('*').eq('restaurant_id', id);
 
-  useEffect(() => {
-    // استرجاع تفضيل المستخدم
-    const savedTheme = localStorage.getItem('menuTheme')
-    if (savedTheme === 'dark') {
-      setDarkMode(true)
-    }
-
-    // التحقق من وجود طلب سابق للتقييم
-    const savedOrderId = localStorage.getItem(`last_order_${id}`)
-    if (savedOrderId) {
-      setLastOrderId(savedOrderId)
-    }
-
-    // استرجاع بيانات العميل المحفوظة
-    const savedCustomerInfo = localStorage.getItem('savedCustomerInfo')
-    if (savedCustomerInfo) {
-      try {
-        const parsed = JSON.parse(savedCustomerInfo)
-        setCustomerInfo(prev => ({
-          ...prev,
-          name: parsed.name || '',
-          phone: parsed.phone || '',
-          deliveryAddress: parsed.deliveryAddress || ''
-        }))
-      } catch (e) {
-        console.error('Error loading saved info', e)
-      }
-    }
-  }, [])
-  
-  const [customerInfo, setCustomerInfo] = useState({
-    name: '',
-    phone: '',
-    orderType: 'dine-in',
-    tableNumber: '',
-    deliveryAddress: '',
-    notes: ''
-  })
-
-  const toggleTheme = () => {
-    const newTheme = !darkMode
-    setDarkMode(newTheme)
-    localStorage.setItem('menuTheme', newTheme ? 'dark' : 'light')
-  }
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const detected = detectLanguage()
-        setLanguage(detected)
-      } catch (e) {
-        setLanguage('ar')
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    let mounted = true
-    import('@/lib/themes')
-      .then((m) => { if (mounted) setThemesState(m.THEMES || m.default || m) })
-      .catch((e) => console.error('Failed loading themes', e))
-    return () => { mounted = false }
-  }, [])
-
-  const [translationsState, setTranslationsState] = useState(null)
-  useEffect(() => {
-    let mounted = true
-    import('@/lib/menuTranslations')
-      .then((m) => { if (mounted) setTranslationsState(m.default || m) })
-      .catch((e) => console.error('Failed loading menu translations', e))
-    return () => { mounted = false }
-  }, [])
-
-  const t = (translationsState ? (translationsState[language] || translationsState['ar']) : (translationsFallback[language] || translationsFallback['ar']))
-
-  // قائمة اللغات المدعومة وترجمات الأسماء للزر
-  const SUPPORTED_LANGS = ['ar', 'en', 'fr', 'de', 'ru', 'ja']
-  const LANG_LABELS = {
-    ar: 'عربي',
-    en: 'English',
-    fr: 'Français',
-    de: 'Deutsch',
-    ru: 'Русский',
-    ja: '日本語'
-  }
-
-  // قاموس ترجمة الفئات والكلمات الشائعة
-  const categoryTranslations = {
-    ar: {
-      'drinks': 'مشروبات',
-      'beverages': 'مشروبات',
-      'appetizers': 'مقبلات',
-      'starters': 'مقبلات',
-      'main courses': 'أطباق رئيسية',
-      'mains': 'أطباق رئيسية',
-      'desserts': 'حلويات',
-      'sweets': 'حلويات',
-      'salads': 'سلطات',
-      'soups': 'شوربة',
-      'burgers': 'برجر',
-      'pizza': 'بيتزا',
-      'pasta': 'معكرونة',
-      'sandwiches': 'ساندويتشات',
-      'seafood': 'مأكولات بحرية',
-      'chicken': 'دجاج',
-      'beef': 'لحم بقري',
-      'vegetarian': 'نباتي'
-    },
-    en: {
-      'drinks': 'Drinks',
-      'beverages': 'Beverages',
-      'appetizers': 'Appetizers',
-      'starters': 'Starters',
-      'main courses': 'Main Courses',
-      'mains': 'Main Courses',
-      'desserts': 'Desserts',
-      'sweets': 'Sweets',
-      'salads': 'Salads',
-      'soups': 'Soups',
-      'burgers': 'Burgers',
-      'pizza': 'Pizza',
-      'pasta': 'Pasta',
-      'sandwiches': 'Sandwiches',
-      'seafood': 'Seafood',
-      'chicken': 'Chicken',
-      'beef': 'Beef',
-      'vegetarian': 'Vegetarian'
-    },
-    fr: {
-      'drinks': 'Boissons',
-      'beverages': 'Boissons',
-      'appetizers': 'Entrées',
-      'starters': 'Entrées',
-      'main courses': 'Plats Principaux',
-      'mains': 'Plats Principaux',
-      'desserts': 'Desserts',
-      'sweets': 'Sucreries',
-      'salads': 'Salades',
-      'soups': 'Soupes',
-      'burgers': 'Hamburgers',
-      'pizza': 'Pizza',
-      'pasta': 'Pâtes',
-      'sandwiches': 'Sandwichs',
-      'seafood': 'Fruits de Mer',
-      'chicken': 'Poulet',
-      'beef': 'Boeuf',
-      'vegetarian': 'Végétarien'
-    },
-    de: {
-      'drinks': 'Getränke',
-      'beverages': 'Getränke',
-      'appetizers': 'Vorspeisen',
-      'starters': 'Vorspeisen',
-      'main courses': 'Hauptgerichte',
+    // يمكنك تمرير البيانات مباشرة إلى المكون أو إعادة بناء واجهة العرض بناءً على البيانات
+    // بقية الكود: بناء واجهة المنيو باستخدام restaurant و menuItems
+    return (
+      <div>
+        {/* مثال: */}
+        <h1>{restaurant ? restaurant.name : 'مطعم غير معروف'}</h1>
+        <ul>
+          {menuItems && menuItems.map(item => (
+            <li key={item.id}>{item.name} - {item.price}</li>
+          ))}
+        </ul>
+        {/* ... أكمل بناء الواجهة حسب الحاجة ... */}
+      </div>
+    );
       'mains': 'Hauptgerichte',
       'desserts': 'Nachtische',
       'sweets': 'Süßigkeiten',
