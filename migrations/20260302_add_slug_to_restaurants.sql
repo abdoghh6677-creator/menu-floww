@@ -1,0 +1,142 @@
+-- إضافة عمود slug فريد وغير فارغ مع توليد تلقائي من الاسم
+ALTER TABLE restaurants ADD COLUMN slug TEXT UNIQUE NOT NULL;
+
+-- تحديث القيم الحالية للـ slug بناءً على الاسم (مع دعم العربية)
+UPDATE restaurants SET slug =
+  lower(
+    regexp_replace(
+      regexp_replace(
+        regexp_replace(
+          regexp_replace(
+            regexp_replace(
+              regexp_replace(
+                regexp_replace(
+                  regexp_replace(
+                    regexp_replace(
+                      regexp_replace(
+                        regexp_replace(
+                          regexp_replace(
+                            regexp_replace(
+                              regexp_replace(
+                                regexp_replace(
+                                  regexp_replace(
+                                    regexp_replace(
+                                      regexp_replace(
+                                        regexp_replace(
+                                          regexp_replace(
+                                            regexp_replace(
+                                              regexp_replace(
+                                                regexp_replace(
+                                                  regexp_replace(
+                                                    regexp_replace(
+                                                      regexp_replace(
+                                                        regexp_replace(
+                                                          regexp_replace(
+                                                            regexp_replace(
+                                                              regexp_replace(
+                                                                regexp_replace(
+                                                                  regexp_replace(
+                                                                    regexp_replace(
+                                                                      regexp_replace(
+                                                                        regexp_replace(
+                                                                          regexp_replace(
+                                                                            regexp_replace(
+                                                                              regexp_replace(
+                                                                                regexp_replace(
+                                                                                  regexp_replace(
+                                                                                    regexp_replace(
+                                                                                      regexp_replace(
+                                                                                        regexp_replace(
+                                                                                          regexp_replace(
+                                                                                            regexp_replace(
+                                                                                              regexp_replace(
+                                                                                                regexp_replace(
+                                                                                                  regexp_replace(
+                                                                                                    regexp_replace(
+                                                                                                      regexp_replace(
+                                                                                                        regexp_replace(
+                                                                                                          regexp_replace(
+                                                                                                            regexp_replace(
+                                                                                                              regexp_replace(
+                                                                                                                regexp_replace(
+                                                                                                                  regexp_replace(
+                                                                                                                    regexp_replace(
+                                                                                                                      regexp_replace(
+                                                                                                                        regexp_replace(
+                                                                                                                          regexp_replace(
+                                                                                                                            regexp_replace(
+                                                                                                                              regexp_replace(
+                                                                                                                                regexp_replace(
+                                                                                                                                  regexp_replace(
+                                                                                                                                    regexp_replace(
+                                                                                                                                      regexp_replace(
+                                                                                                                                        regexp_replace(
+                                                                                                                                          regexp_replace(
+                                                                                                                                            regexp_replace(
+                                                                                                                                              regexp_replace(
+                                                                                                                                                regexp_replace(
+                                                                                                                                                  regexp_replace(
+                                                                                                                                                    regexp_replace(
+                                                                                                                                                      regexp_replace(
+                                                                                                                                                        regexp_replace(
+                                                                                                                                                          regexp_replace(
+                                                                                                                                                            regexp_replace(
+                                                                                                                                                              regexp_replace(
+                                                                                                                                                                regexp_replace(
+                                                                                                                                                                  regexp_replace(
+                                                                                                                                                                    regexp_replace(
+                                                                                                                                                                      regexp_replace(
+                                                                                                                                                                        regexp_replace(
+                                                                                                                                                                          regexp_replace(
+                                                                                                                                                                            regexp_replace(
+                                                                                                                                                                              regexp_replace(
+                                                                                                                                                                                regexp_replace(
+                                                                                                                                                                                  regexp_replace(
+                                                                                                                                                                                    regexp_replace(
+                                                                                                                                                                                      regexp_replace(
+                                                                                                                                                                                        regexp_replace(
+                                                                                                                                                                                          regexp_replace(
+                                                                                                                                                                                            regexp_replace(
+                                                                                                                                                                                              regexp_replace(
+                                                                                                                                                                                                regexp_replace(
+                                                                                                                                                                                                  regexp_replace(
+                                                                                                                                                                                                    regexp_replace(
+                                                                                                                                                                                                      regexp_replace(
+                                                                                                                                                                                                        regexp_replace(
+                                                                                                                                                                                                          regexp_replace(
+                                                                                                                                                                                                            regexp_replace(
+                                                                                                                                                                                                              regexp_replace(
+                                                                                                                                                                                                                regexp_replace(
+                                                                                                                                                                                                                  regexp_replace(
+                                                                                                                                                                                                                    regexp_replace(
+                                                                                                                                                                                                                      regexp_replace(
+                                                                                                                                                                                                                        regexp_replace(
+                                                                                                                                                                                                                          regexp_replace(
+                                                                                                                                                                                                                            regexp_replace(
+                                                                                                                                                                                                                              regexp_replace(
+                                                                                                                                                                                                                                regexp_replace(
+                                                                                                                                                                                                                                  regexp_replace(
+                                                                                                                                                                                                                                    regexp_replace(
+                                                                                                                                                                                                                                      regexp_replace(
+                                                                                                                                                                                                                                        regexp_replace(
+                                                                                                                                                                                                                                          regexp_replace(
+                                                                                                                                                                                                                                            regexp_replace(
+                                                                                                                                                                                                                                              regexp_replace(
+                                                                                                                                                                                                                                                regexp_replace(
+                                                                                                                                                                                                                                                  regexp_replace(
+                                                                                                                                                                                                                                                    regexp_replace(
+                                                                                                                                                                                                                                                      regexp_replace(
+                                                                                                                                                                                                                                                        regexp_replace(
+                                                                                                                                                                                                                                                          regexp_replace(
+                                                                                                                                                                                                                                                            regexp_replace(
+                                                                                                                                                                                                                                                              regexp_replace(
+                                                                                                                                                                                                                                                                regexp_replace(
+                                                                                                                                                                                                  name, '[أ]', 'a', 'g'), '[ب]', 'b', 'g'), '[ت]', 't', 'g'), '[ث]', 'th', 'g'), '[ج]', 'j', 'g'), '[ح]', 'h', 'g'), '[خ]', 'kh', 'g'), '[د]', 'd', 'g'), '[ذ]', 'dh', 'g'), '[ر]', 'r', 'g'), '[ز]', 'z', 'g'), '[س]', 's', 'g'), '[ش]', 'sh', 'g'), '[ص]', 's', 'g'), '[ض]', 'd', 'g'), '[ط]', 't', 'g'), '[ظ]', 'z', 'g'), '[ع]', 'a', 'g'), '[غ]', 'gh', 'g'), '[ف]', 'f', 'g'), '[ق]', 'q', 'g'), '[ك]', 'k', 'g'), '[ل]', 'l', 'g'), '[م]', 'm', 'g'), '[ن]', 'n', 'g'), '[ه]', 'h', 'g'), '[و]', 'w', 'g'), '[يى]', 'y', 'g'), '[ء]', '', 'g'), '[ة]', 'h', 'g'), '[ى]', 'a', 'g'), '[\s_]+', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g'), '^-+|-+$', '', 'g')
+  )
+WHERE slug IS NULL OR slug = '';
+
+-- إضافة قيد NOT NULL بعد التحديث
+ALTER TABLE restaurants ALTER COLUMN slug SET NOT NULL;
+
+-- إضافة فهرس فريد
+CREATE UNIQUE INDEX restaurants_slug_idx ON restaurants(slug);
